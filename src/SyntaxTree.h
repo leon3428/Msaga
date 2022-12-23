@@ -14,7 +14,6 @@ enum class UniformCharacter : int8_t {
     Empty, Idn, Number, Character, CharacterArray, LBracket, RBracket
 };
 
-
 /**
  * @brief most generic class of the tree
  * 

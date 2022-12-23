@@ -3,15 +3,6 @@
 #include "Global.h"
 #include "Utils.h"
 
-// Expression
-GenericExpression::GenericExpression(const std::string &exprType, bool isLValue)
-    : m_exprType(exprType), m_isLValue(isLValue) {}
-
-
-// Primary expression
-PrimaryExpression::PrimaryExpression(const std::string &exprType, bool isLValue)
-    : GenericExpression(exprType, isLValue) {}
-
 bool PrimaryExpression::check() {
     if(m_children.size() == 1) {
         if(Leaf *leaf = dynamic_cast<Leaf*>(m_children[0].get())) {
@@ -26,17 +17,19 @@ bool PrimaryExpression::check() {
                     break;
 
                 case UniformCharacter::Number:
-                    m_exprType = "int";
+                    m_exprType.push_front(PrimitiveExprType::Int);
                     m_isLValue = false;
                     break;
                 
                 case UniformCharacter::Character:
-                    m_exprType = "char";
+                    m_exprType.push_front(PrimitiveExprType::Char);
                     m_isLValue = false;
                     break;
 
                 case UniformCharacter::CharacterArray:
-                    m_exprType = "array(const(char))";
+                    m_exprType.push_front(PrimitiveExprType::Char);
+                    m_exprType.push_front(PrimitiveExprType::Const);
+                    m_exprType.push_front(PrimitiveExprType::Array);
                     m_isLValue = false;
                     break;
 

@@ -3,6 +3,7 @@
 
 #include "SyntaxTree.h"
 #include <iostream>
+#include "Global.h"
 
 /**
  * @brief All other expression classes should be based on this class
@@ -10,14 +11,11 @@
  */
 class GenericExpression : public SyntaxTreeNode {
 protected:
-    std::string m_exprType = "";
+    std::forward_list<PrimitiveExprType> m_exprType;
     bool m_isLValue = false;
 
 public:
-    GenericExpression() = default;
-    GenericExpression(const std::string &exprType, bool isLValue);
-
-    [[nodiscard]] inline std::string getExprType() const noexcept { return m_exprType; }
+    [[nodiscard]] inline std::forward_list<PrimitiveExprType> getExprType() const noexcept { return m_exprType; }
     [[nodiscard]] inline bool isLValue() const noexcept { return m_isLValue; }
 };
 
@@ -28,9 +26,6 @@ public:
  */
 class PrimaryExpression : public GenericExpression {
 public:
-    PrimaryExpression() = default;
-    PrimaryExpression(const std::string &exprType, bool isLValue);
-
     bool check() override;
 };
 
