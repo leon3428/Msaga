@@ -14,15 +14,26 @@ enum class NodeType : uint8_t {
     BitwiseOrExpression, BitwiseXorExpression, BitwiseAndExpression,
     PostfixExpression, UnaryExpression,
 
+	ComplexCommand, ListCommand, Command, 
+	ExpressionCommand, BranchCommand, LoopCommand,
+	GotoCommand, TranslationUnit, ExternalDeclaration,
+
+	FunctionDefinition, ParameterList, ParameterDeclaration,
+	DeclarationList, Declaration, DeclaratorInitList,
+	InitDeclarator, DirectDeclarator, Initializator,
+	JoinExpressionList,
+
     LeafIdn, LeafNum, LeafCharacter, LeafCharArray,
     LeafComma, LeafAssignment, LeafLogOr, LeafLogAnd, LeafBitOr, LeafBitXor, LeafBitAnd,
     LeafEq, LeafNeq,
     LeafLt, LeafGt, LeafLte, LeafGte,
     LeafRightBracket, LeafLeftBracket,
     LeafRightSquareBracket, LeafLeftSquareBracket,
+	LeafLeftCurlyBracket, LeafRightCurlyBracket,
     LeafPlus, LeafMinus, LeafMult, LeafDiv, LeafMod,
-    LeafInc, LeafDec,
+    LeafInc, LeafDec, LeafSemicolon,
 
+	LeafKrIf, LeafKrElse, LeafKrWhile, LeafKrFor,
     LeafKwConst, LeafKwInt, LeafKwChar, LeafKwVoid,
 
     TypeName, TypeSpecifier, UnaryOperator, ArgumentList
