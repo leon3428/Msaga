@@ -4,6 +4,7 @@ add_executable(${PROJECT_NAME}
     Expressions.cpp
     Leafs.cpp
     Common.cpp
+    OtherNodes.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

@@ -1,6 +1,6 @@
 #include "Common.hpp"
 
-std::unordered_map<std::string, Identifier> Global::identifierTable;
+std::unordered_map<std::string, Msaga::Identifier> Global::identifierTable;
 
 
 // true if a can be implicitly converted to b
@@ -32,3 +32,20 @@ bool implicitlyConvertible(ExprType a, ExprType b) {
 
     return false;
 }
+
+ExprType Msaga::arrayBaseType(ExprType a) {
+    if(a == ExprType::ArrayChar)
+        return ExprType::Char;
+
+    if(a == ExprType::ArrayInt)
+        return ExprType::Int;
+
+    if(a == ExprType::ArrayConstChar)
+        return ExprType::ConstChar;
+
+    if(a == ExprType::ArrayConstInt)
+        return ExprType::ConstInt;
+}
+
+Msaga::FunctionType::FunctionType(const std::vector<ExprType> &argsTypes, ExprType retType) 
+    : argumentsTypes(argsTypes), returnType(retType) {}

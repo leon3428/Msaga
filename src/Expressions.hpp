@@ -83,10 +83,18 @@ public:
  * 
  */
 class PostfixExpression : public GenericExpression {
+private:
+    std::unique_ptr<Msaga::FunctionType> m_functionType;
+
 public:
     void check() override;
 
+    inline void constructFunctionType(const std::vector<ExprType> &argsTypes, ExprType retType) {
+        m_functionType = std::make_unique<Msaga::FunctionType>(argsTypes, retType);
+    }     
+
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PostfixExpression; }
+    [[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType.get(); }
 };
 
 
@@ -132,6 +140,61 @@ public:
     void check() override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::EqualsExpression; }
+};
+
+/**
+ * @brief <odnosni_izraz>
+ * 
+ */
+class ComparisonExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ComparisonExpression; }
+};
+
+/**
+ * @brief <aditivni_izraz>
+ * 
+ */
+class AdditiveExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::AdditiveExpression; }
+};
+
+/**
+ * @brief <multiplikativni_izraz>
+ * 
+ */
+class MultiplicativeExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::MultiplicativeExpression; }
+};
+
+/**
+ * @brief <cast_izraz>
+ * 
+ */
+class CastExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::CastExpression; }
+};
+
+/**
+ * @brief <unarni_izraz>
+ * 
+ */
+class UnaryExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::UnaryExpression; }
 };
 
 #endif //EXPRESSIONS_H

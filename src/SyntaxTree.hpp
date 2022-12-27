@@ -4,22 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-
-enum class NodeType : uint8_t {
-    PrimaryExpression, Expression, 
-    AssignmentExpression, EqualsExpression,
-    LogicalOrExpression, LogicalAndExpression,
-    BitwiseOrExpression, BitwiseXorExpression, BitwiseAndExpression,
-    PostfixExpression,
-    LeafIdn, LeafNum, LeafChar, LeafCharArray, LeafComma, LeafAssignment, LeafLogOr, LeafLogAnd, LeafBitOr, LeafBitXor, LeafBitAnd,
-    LeafRightBracket, LeafLeftBracket
-};
-
-enum class ExprType : int8_t {
-    Void, Int, Char,
-    ConstInt, ConstChar,
-    ArrayInt, ArrayChar, ArrayConstInt, ArrayConstChar
-};
+#include "Common.hpp"
 
 /**
  * @brief most generic class of the tree

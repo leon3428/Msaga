@@ -36,11 +36,11 @@ public:
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafNum; }
 };
 
-class LeafChar : public GenericLeaf {
+class LeafCharacter : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafChar; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafCharacter; }
 };
 
 class LeafCharArray : public GenericLeaf {
@@ -106,5 +106,138 @@ public:
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafBitAnd; }
 };
 
+class LeafEq : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafEq; }
+};
+
+class LeafNeq : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafNeq; }
+};
+
+class LeafLt : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafLt; }
+};
+
+class LeafGt : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafGt; }
+};
+
+class LeafGte : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafGte; }
+};
+
+class LeafLte : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafLte; }
+};
+
+class LeafPlus : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafPlus; }
+};
+
+class LeafMinus : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafMinus; }
+};
+
+
+class LeafMult : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafMult; }
+};
+
+class LeafDiv : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafDiv; }
+};
+
+class LeafMod : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafMod; }
+};
+
+class LeafKwConst : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwConst; }
+};
+
+class LeafKwVoid : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwVoid; }
+};
+
+class LeafKwInt : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwInt; }
+};
+
+class LeafKwChar : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwChar; }
+};
+
+class LeafInc : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafInc; }
+};
+
+class LeafDec : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafDec; }
+};
+
+class LeafLeftSquareBracket : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafLeftSquareBracket; }
+};
+
+class LeafRightSquareBracket : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafRightSquareBracket; }
+};
 
 #endif // LEAFS_H
