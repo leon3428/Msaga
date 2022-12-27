@@ -2,6 +2,8 @@ add_executable(${PROJECT_NAME}
     Msaga.cpp
     SyntaxTree.cpp
     Expressions.cpp
+    Leafs.cpp
+    Global.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

@@ -1,9 +1,9 @@
 #ifndef EXPRESSIONS_H
 #define EXPRESSIONS_H
 
-#include "SyntaxTree.h"
+#include "SyntaxTree.hpp"
 #include <iostream>
-#include "Global.h"
+#include <forward_list>
 
 /**
  * @brief All other expression classes should be based on this class
@@ -20,13 +20,15 @@ public:
 };
 
 
-/**
- * @brief Node for nonterminal character <primary_expression>
- * 
- */
 class PrimaryExpression : public GenericExpression {
 public:
-    bool check() override;
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PrimaryExpression; }
 };
+
+
+
+
 
 #endif //EXPRESSIONS_H

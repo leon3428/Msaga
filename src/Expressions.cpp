@@ -1,49 +1,24 @@
-#include "SyntaxTree.h"
-#include "Expressions.h"
-#include "Global.h"
-#include "Utils.h"
+#include "Expressions.hpp"
+#include "Leafs.hpp"
+#include "Global.hpp"
 
-bool PrimaryExpression::check() {
-    if(m_children.size() == 1) {
-        if(Leaf *leaf = dynamic_cast<Leaf*>(m_children[0].get())) {
-            
-            switch(leaf -> getUniformCharacter()) {
-                case UniformCharacter::Idn:
-                    if(!identifierTableContains(leaf -> getLexicalUnit()))
-                        return false;
-
-                    m_exprType = identifierTable[leaf -> getLexicalUnit()].type;
-                    m_isLValue = identifierTable[leaf -> getLexicalUnit()].LValue;
-                    break;
-
-                case UniformCharacter::Number:
-                    m_exprType.push_front(PrimitiveExprType::Int);
-                    m_isLValue = false;
-                    break;
-                
-                case UniformCharacter::Character:
-                    m_exprType.push_front(PrimitiveExprType::Char);
-                    m_isLValue = false;
-                    break;
-
-                case UniformCharacter::CharacterArray:
-                    m_exprType.push_front(PrimitiveExprType::Char);
-                    m_exprType.push_front(PrimitiveExprType::Const);
-                    m_exprType.push_front(PrimitiveExprType::Array);
-                    m_isLValue = false;
-                    break;
-
-                default:
-                    return false;
-            }
-        }
-    } else if(m_children.size() == 3) {
-        // TODO: implement this rule
+void PrimaryExpression::check() {
+    if(checkChildren<NodeType::LeafIdn>()) {
+        LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
+        m_exprType = Global::identifierTable[l -> getLexicalUnit()].exprType;
+        m_isLValue = Global::identifierTable[l -> getLexicalUnit()].LValue;
+    } else if(checkChildren<NodeType::LeafNum>()) {
+        m_exprType = {PrimitiveExprType::Int};
+        m_isLValue = false;
+    } else if(checkChildren<NodeType::LeafChar>()) {
+        m_exprType = {PrimitiveExprType::Char};
+        m_isLValue = false;
+    } else if(checkChildren<NodeType::LeafCharArray>()) {
+        m_exprType = {PrimitiveExprType::Array, PrimitiveExprType::Const, PrimitiveExprType::Char};
+        m_isLValue = false;
+    } else if(checkChildren<NodeType::LeafLeftBracket, NodeType::Expression, NodeType::LeafRightBracket>()){
+        // TODO: implement this case
     } else {
-        return false;
+        m_errorHandler();
     }
-    
-
-
-    return true;
 }

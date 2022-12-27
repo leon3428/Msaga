@@ -11,11 +11,4 @@
 #  define DebugAssert(cond, msg)
 #endif
 
-#include <string>
-#include "Global.h"
-
-[[nodiscard]] inline bool identifierTableContains(const std::string &name) {
-    return identifierTable.find(name) != identifierTable.end();
-}
-
 #endif //UTILS_H
