@@ -8,7 +8,7 @@
 #include "SyntaxTree.hpp"
 
 struct Identifier {
-    std::forward_list<PrimitiveExprType> exprType;
+    ExprType exprType;
     bool LValue;
 };
 
@@ -16,5 +16,14 @@ namespace Global {
     extern std::unordered_map<std::string, Identifier> identifierTable;
 }
 
+/**
+ * @brief true if a can be implicitly converted to b
+ * 
+ * @param a 
+ * @param b 
+ * @return true 
+ * @return false 
+ */
+bool implicitlyConvertible(ExprType a, ExprType b);
 
 #endif // GLOBAL_H

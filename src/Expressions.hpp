@@ -11,15 +11,21 @@
  */
 class GenericExpression : public SyntaxTreeNode {
 protected:
-    std::forward_list<PrimitiveExprType> m_exprType;
+    ExprType m_exprType;
     bool m_isLValue = false;
 
 public:
-    [[nodiscard]] inline std::forward_list<PrimitiveExprType> getExprType() const noexcept { return m_exprType; }
-    [[nodiscard]] inline bool isLValue() const noexcept { return m_isLValue; }
+    [[nodiscard]] inline ExprType getExprType() const { return m_exprType; }
+    [[nodiscard]] inline bool isLValue() const { return m_isLValue; }
+
+    inline void setExprType(ExprType exprType) { m_exprType = exprType; }
+    inline void setLValue(bool LValue) { m_isLValue = LValue; }
 };
 
-
+/**
+ * @brief <primarni_izraz>
+ * 
+ */
 class PrimaryExpression : public GenericExpression {
 public:
     void check() override;
@@ -27,8 +33,105 @@ public:
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PrimaryExpression; }
 };
 
+/**
+ * @brief <izraz>
+ * 
+ */
+class Expression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::Expression; }
+};
+
+/**
+ * @brief <izraz_pridruzivanja>
+ * 
+ */
+class AssignmentExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::AssignmentExpression; }
+};
+
+/**
+ * @brief <log_ili_izraz>
+ * 
+ */
+class LogicalOrExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LogicalOrExpression; }
+};
+
+/**
+ * @brief <log_i_izraz>
+ * 
+ */
+class LogicalAndExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LogicalAndExpression; }
+};
 
 
+/**
+ * @brief <postfiks_izraz>
+ * 
+ */
+class PostfixExpression : public GenericExpression {
+public:
+    void check() override;
 
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PostfixExpression; }
+};
+
+
+/**
+ * @brief <bin_ili_izraz>
+ * 
+ */
+class BitwiseOrExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BitwiseOrExpression; }
+};
+
+/**
+ * @brief <bin_xili_izraz>
+ * 
+ */
+class BitwiseXorExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BitwiseXorExpression; }
+};
+
+/**
+ * @brief <bin_i_izraz>
+ * 
+ */
+class BitwiseAndExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BitwiseAndExpression; }
+};
+
+/**
+ * @brief <jednakosti_izraz>
+ * 
+ */
+class EqualsExpression : public GenericExpression {
+public:
+    void check() override;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::EqualsExpression; }
+};
 
 #endif //EXPRESSIONS_H

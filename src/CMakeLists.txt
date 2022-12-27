@@ -3,7 +3,7 @@ add_executable(${PROJECT_NAME}
     SyntaxTree.cpp
     Expressions.cpp
     Leafs.cpp
-    Global.cpp
+    Common.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

@@ -64,4 +64,47 @@ public:
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafRightBracket; }
 };
 
+class LeafAssignment : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafAssignment; }
+};
+
+class LeafLogOr : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafLogOr; }
+};
+
+class LeafLogAnd : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafLogAnd; }
+};
+
+class LeafBitOr : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafBitOr; }
+};
+
+class LeafBitXor : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafBitXor; }
+};
+
+class LeafBitAnd : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafBitAnd; }
+};
+
+
 #endif // LEAFS_H

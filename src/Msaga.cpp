@@ -6,9 +6,5 @@ int main() {
     
     std::cout << "Hello World" << std::endl;
 
-    PrimaryExpression pExpr;
-    pExpr.addChild<LeafIdn>();
-    
-    pExpr.check();
     return 0;
 }
