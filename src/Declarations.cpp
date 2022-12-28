@@ -137,7 +137,19 @@ void DirectDeclarator::check() {
 }
 
 void Initializator::check() {
-	m_errorHandler();
+	if(checkChildren<NodeType::AssignmentExpression>()) {
+		AssignmentExpression *expr = static_cast<AssignmentExpression *>(m_children[0].get());
+		expr -> check();
+		// TODO: NEKAK PROVJERIT JEL EXPR IDE U NIZ_ZNAKOVA I OSTATAK
+	} else if(checkChildren<NodeType::LeafLeftCurlyBracket, NodeType::JoinExpressionList, NodeType::LeafRightCurlyBracket>()) {
+		JoinExpressionList *list = static_cast<JoinExpressionList *>(m_children[0].get());
+		list -> check();
+		this -> setElementCnt(list -> getElementCnt());
+		this -> setTypes(list -> getTypes());
+	}
+	else {
+		m_errorHandler();
+	}
 }
 
 void JoinExpressionList::check() {
