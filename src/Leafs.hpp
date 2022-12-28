@@ -240,4 +240,73 @@ public:
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafRightSquareBracket; }
 };
 
+class LeafSemicolon : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafSemicolon; }
+};
+
+class LeafKrIf : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrIf; }
+};
+
+class LeafKrElse : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrElse; }
+};
+
+class LeafKrWhile : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrWhile; }
+};
+
+class LeafKrFor : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrFor; }
+};
+
+class LeafKrContinue : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrContinue; }
+};
+
+class LeafKrBreak : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrBreak; }
+};
+
+class LeafKrReturn : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrReturn; }
+};
+
+class LeafLeftCurlyBracket : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafLeftCurlyBracket; }
+};
+
+class LeafRightCurlyBracket : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafRightCurlyBracket; }
+};
 #endif // LEAFS_H
