@@ -4,6 +4,7 @@
 #include "SyntaxTree.hpp"
 #include <iostream>
 #include <forward_list>
+#include <vector>
 
 /**
  * @brief All other command classes should be based on this class
@@ -88,8 +89,13 @@ public:
  * 
  */
 class DeclaratorInitList : public GenericDeclaration {
+private:
+	ExprType m_ntype;
+
 public:
     void check() override;
+	void setNtype(ExprType ntype) { m_ntype = ntype; }
+	ExprType getNtype() { return m_ntype; }
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::DeclaratorInitList; }
 };
@@ -99,8 +105,14 @@ public:
  * 
  */
 class InitDeclarator : public GenericDeclaration {
+private:
+	ExprType m_ntype;
+
 public:
     void check() override;
+	void setNtype(ExprType ntype) { m_ntype = ntype; }
+	ExprType getNtype() { return m_ntype; }
+
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::InitDeclarator; }
 };
@@ -110,8 +122,15 @@ public:
  * 
  */
 class DirectDeclarator : public GenericDeclaration {
+private:
+	ExprType m_ntype;
+	int m_elementCnt;
 public:
     void check() override;
+	void setNtype(ExprType ntype) { m_ntype = ntype; }
+	ExprType getNtype() { return m_ntype; }
+	void setElementCnt(int elementCnt) { m_elementCnt = elementCnt; }
+	int getElementCnt() { return m_elementCnt; }
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::DirectDeclarator; }
 };
@@ -132,8 +151,20 @@ public:
  * 
  */
 class JoinExpressionList : public GenericDeclaration {
+private:
+	ExprType m_ntype;
+	int m_elementCnt;
+	std::vector<ExprType> m_types;
 public:
     void check() override;
+	void setNtype(ExprType ntype) { m_ntype = ntype; }
+	ExprType getNtype() { return m_ntype; }
+	void setElementCnt(int elementCnt) { m_elementCnt = elementCnt; }
+	int getElementCnt() { return m_elementCnt; }
+	void setTypes(std::vector<ExprType> types) { m_types = types; }
+	void addType(ExprType tip) { m_types.push_back(tip); }
+	std::vector<ExprType> getTypes() { return m_types; }
+
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::JoinExpressionList; }
 };

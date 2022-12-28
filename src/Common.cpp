@@ -47,5 +47,19 @@ ExprType Msaga::arrayBaseType(ExprType a) {
         return ExprType::ConstInt;
 }
 
+ExprType Msaga::baseTypeToArray(ExprType a) {
+    if(a == ExprType::Char)
+        return ExprType::ArrayChar;
+
+    if(a == ExprType::Int)
+        return ExprType::ArrayInt;
+
+    if(a == ExprType::ConstChar)
+        return ExprType::ArrayConstChar;
+
+    if(a == ExprType::ConstInt)
+        return ExprType::ArrayConstInt;
+}
+
 Msaga::FunctionType::FunctionType(const std::vector<ExprType> &argsTypes, ExprType retType) 
     : argumentsTypes(argsTypes), returnType(retType) {}

@@ -73,10 +73,17 @@ namespace Msaga {
     }
 
     ExprType arrayBaseType(ExprType a);
+	ExprType baseTypeToArray(ExprType a);
 
     inline bool isConst(ExprType a) {
         return a == ExprType::ConstChar || a == ExprType::ConstInt;
     }
+	inline bool isConstArray(ExprType a) {
+        return a == ExprType::ArrayConstChar || a == ExprType::ArrayConstInt;
+    }
+	inline bool isNumber(ExprType a) {
+		return a == ExprType::Char || a == ExprType::Int;
+	}
 }
 
 
