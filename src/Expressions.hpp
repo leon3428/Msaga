@@ -84,17 +84,15 @@ public:
  */
 class PostfixExpression : public GenericExpression {
 private:
-    std::unique_ptr<Msaga::FunctionType> m_functionType;
+	Msaga::FunctionType *m_functionType = nullptr;
 
 public:
-    void check() override;
+	PostfixExpression() = default;
+	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
+	void check() override;
 
-    inline void constructFunctionType(const std::vector<ExprType> &argsTypes, ExprType retType) {
-        m_functionType = std::make_unique<Msaga::FunctionType>(argsTypes, retType);
-    }     
-
+	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PostfixExpression; }
-    [[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType.get(); }
 };
 
 

@@ -24,9 +24,18 @@ public:
  * 
  */
 class FunctionDefinition : public GenericDeclaration {
+private:
+	Msaga::FunctionType *m_functionType = nullptr;
+	SyntaxTreeNode *m_insideLoop = nullptr;
+
 public:
+	FunctionDefinition() = default;
+	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
+	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
+	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
     void check() override;
 
+	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::FunctionDefinition; }
 };
 

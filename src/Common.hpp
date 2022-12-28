@@ -35,6 +35,7 @@ enum class NodeType : uint8_t {
 
 	LeafKrIf, LeafKrElse, LeafKrWhile, LeafKrFor,
     LeafKwConst, LeafKwInt, LeafKwChar, LeafKwVoid,
+	LeafKrContinue, LeafKrBreak, LeafKrReturn,
 
     TypeName, TypeSpecifier, UnaryOperator, ArgumentList
 };
