@@ -67,6 +67,9 @@ namespace Msaga {
     };
 
     bool implicitlyConvertible(ExprType a, ExprType b);
+	bool implicitlyConvertibleToT(ExprType a);
+	bool inLocalScope(std::string name); // is IDN.ime in local scope
+	void declareVariable(std::string name, ExprType tip); // zabiljezi deklaraciju IDN.ime s odgovarajucim tipom
 
     inline bool isArrayType(ExprType a) {
         return a == ExprType::ArrayChar || a == ExprType::ArrayInt || a == ExprType::ArrayConstChar || a == ExprType::ArrayConstInt;

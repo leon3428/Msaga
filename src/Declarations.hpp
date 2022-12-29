@@ -45,9 +45,22 @@ public:
  * 
  */
 class ParameterList : public GenericDeclaration {
+private:
+	std::vector<ExprType> m_types;
+	std::vector<std::string> m_names;
 public:
     void check() override;
+	
+	void setTypes(std::vector<ExprType> types) { m_types = types; }
+	void addType(ExprType expr) { m_types.push_back(expr); }
+	std::vector<ExprType> getTypes(){ return m_types; }
 
+	void setNames(std::vector<std::string> names) { m_names = names; }
+	void addName(std::string name) { m_names.push_back(name); }
+	std::vector<std::string> getNames(){ return m_names; }
+
+	std::vector<ExprType> getTypes() { return m_types; }
+   
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ParameterList; }
 };
 
@@ -56,7 +69,12 @@ public:
  * 
  */
 class ParameterDeclaration : public GenericDeclaration {
+private:
+	std::string m_name;
 public:
+	void setName(std::string name) { m_name = name; }
+	std::string getName() { return m_name; }
+
     void check() override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ParameterDeclaration; }

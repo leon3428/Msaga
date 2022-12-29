@@ -12,7 +12,28 @@ void FunctionDefinition::check() {
 }
 
 void ParameterList::check() {
-	m_errorHandler();
+	if(checkChildren<NodeType::ParameterDeclaration>()) {
+		ParameterDeclaration *decl = static_cast<ParameterDeclaration *>(m_children[0].get());
+		decl -> check();
+		this -> addName(decl -> getName());
+		this -> addType(decl -> getExprType());
+	} else if(checkChildren<NodeType::ParameterList, NodeType::LeafComma, NodeType::ParameterDeclaration>()) {
+		ParameterList *list = static_cast<ParameterList *>(m_children[0].get());
+		list -> check();
+		ParameterDeclaration *decl = static_cast<ParameterDeclaration *>(m_children[2].get());
+		decl -> check();
+
+		this -> setNames(list -> getNames());
+		for(std::string name : this -> getNames())
+			if(name == decl -> getName())
+				m_errorHandler();
+
+		this -> addName(decl -> getName());
+		this -> setTypes(list -> getTypes());
+		this -> addType(list -> getExprType());
+	} else{
+		m_errorHandler();
+	}
 }
 
 void ParameterDeclaration::check() {
@@ -21,16 +42,19 @@ void ParameterDeclaration::check() {
 		tip -> check();
 		if(tip -> getExprType() == ExprType::Void)
 			m_errorHandler();
+		LeafIdn *idn = static_cast<LeafIdn *>(m_children[1].get());
 
+		this -> setName(idn -> getLexicalUnit());
 		this -> setExprType(tip -> getExprType());
-		// TODO: IDN.ime = ime
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftSquareBracket, NodeType::LeafRightSquareBracket>()) {
 		TypeName *tip = static_cast<TypeName *>(m_children[0].get());
 		tip -> check();
 		if(tip -> getExprType() == ExprType::Void)
 			m_errorHandler();
+		LeafIdn *idn = static_cast<LeafIdn *>(m_children[1].get());
+
+		this -> setName(idn -> getLexicalUnit());
 		this -> setExprType(Msaga::baseTypeToArray(tip -> getExprType()));
-		// TODO: IDN.ime = ime
 	} else{
 		m_errorHandler();
 	}
@@ -93,10 +117,14 @@ void InitDeclarator::check() {
 		Initializator *init = static_cast<Initializator *>(m_children[2].get());
 		init -> check();
 		if(Msaga::isConst(decl -> getExprType()) || Msaga::isNumber(decl -> getExprType())) {
-			if(!Msaga::implicitlyConvertible(init -> getExprType(), ExprType::Int)) // MOZDA TREBA DODATNI UVJET??
+			if(!Msaga::implicitlyConvertibleToT(init -> getExprType()))
 				m_errorHandler();
 		} else if(Msaga::isArrayType(decl -> getExprType())) {
-			// TODO to je tocka 3 drugi if
+			if(init -> getElementCnt() > decl -> getElementCnt())
+				m_errorHandler();
+			for(auto tip : init -> getTypes())
+				if(!Msaga::implicitlyConvertibleToT(tip))
+					m_errorHandler(); // malo mi je upitno ovo
 		} else {
 			m_errorHandler();
 		}
@@ -109,27 +137,32 @@ void DirectDeclarator::check() {
 	if(checkChildren<NodeType::LeafIdn>()) {
 		if(this -> getNtype() == ExprType::Void)
 			m_errorHandler();
-		// TODO: ime nije u lokalnom djelokrugu i zabiljezni IDN.ime
+		
+		LeafIdn *idn = static_cast<LeafIdn *>(m_children[0].get());
+		if(Msaga::inLocalScope(idn -> getLexicalUnit()))
+			m_errorHandler();
 		this -> setExprType(this -> getNtype());
+		Msaga::declareVariable(idn -> getLexicalUnit(), this -> getExprType());
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftSquareBracket, NodeType::LeafNum, NodeType::LeafRightSquareBracket>()) {
 		LeafNum *num = static_cast<LeafNum *>(m_children[2].get()); 
 		int cnt = std::stoi(num -> getLexicalUnit());
 
 		if(this -> getNtype() == ExprType::Void)
 			m_errorHandler();
-		// TODO: IDN.ime nije deklarirano
+		LeafIdn *idn = static_cast<LeafIdn *>(m_children[0].get());
+		if(Msaga::inLocalScope(idn -> getLexicalUnit()))
+			m_errorHandler();
 		if(cnt <= 0 || cnt > 1024)
 			m_errorHandler();
-		// TODO: Zabiljezi IDN.ime s odgovarajucim tipom
-
 		this -> setElementCnt(cnt);
 		this -> setExprType(Msaga::baseTypeToArray(this -> getNtype()));
+		Msaga::declareVariable(idn -> getLexicalUnit(), this -> getExprType());
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::LeafKwVoid, NodeType::LeafRightBracket>()) {
-		;// TODO 
+		; // TODO
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::ParameterList, NodeType::LeafRightBracket>()) {
 		ParameterList *list = static_cast<ParameterList *>(m_children[2].get());
 		list -> check();
-		// TODO djelokrug 
+		// TODO
 	}
 	else {
 		m_errorHandler();

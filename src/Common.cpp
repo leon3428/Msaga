@@ -33,6 +33,10 @@ bool implicitlyConvertible(ExprType a, ExprType b) {
     return false;
 }
 
+bool implicitlyConvertibleToT(ExprType a) {
+	return implicitlyConvertible(a, ExprType::Int) || implicitlyConvertible(a, ExprType::Char);
+}
+
 ExprType Msaga::arrayBaseType(ExprType a) {
     if(a == ExprType::ArrayChar)
         return ExprType::Char;
