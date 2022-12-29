@@ -1,8 +1,6 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include <unordered_map>
-#include <forward_list>
 #include <string>
 #include <vector>
 
@@ -16,11 +14,11 @@ enum class NodeType : uint8_t {
 
 	ComplexCommand, ListCommand, Command, 
 	ExpressionCommand, BranchCommand, LoopCommand,
-	GotoCommand, TranslationUnit, ExternalDeclaration,
+	JumpCommand, TranslationUnit, ExternalDeclaration,
 
 	FunctionDefinition, ParameterList, ParameterDeclaration,
 	DeclarationList, Declaration, DeclaratorInitList,
-	InitDeclarator, DirectDeclarator, Initializator,
+	InitDeclarator, DirectDeclarator, Initializer,
 	JoinExpressionList,
 
     LeafIdn, LeafNum, LeafCharacter, LeafCharArray,
@@ -33,9 +31,9 @@ enum class NodeType : uint8_t {
     LeafPlus, LeafMinus, LeafMult, LeafDiv, LeafMod,
     LeafInc, LeafDec, LeafSemicolon,
 
-	LeafKrIf, LeafKrElse, LeafKrWhile, LeafKrFor,
+	LeafKwIf, LeafKwElse, LeafKwWhile, LeafKwFor,
     LeafKwConst, LeafKwInt, LeafKwChar, LeafKwVoid,
-	LeafKrContinue, LeafKrBreak, LeafKrReturn,
+	LeafKwContinue, LeafKwBreak, LeafKwReturn,
 
     TypeName, TypeSpecifier, UnaryOperator, ArgumentList
 };
@@ -48,15 +46,12 @@ enum class ExprType : int8_t {
 };
 
 
-namespace Global {
-
-    extern std::unordered_map<std::string, Msaga::Identifier> identifierTable;
-}
-
 namespace Msaga {
     struct Identifier {
         ExprType exprType;
         bool LValue;
+        bool defined;
+        FunctionType *functionType;
     };
 
     struct FunctionType {
@@ -67,9 +62,14 @@ namespace Msaga {
     };
 
     bool implicitlyConvertible(ExprType a, ExprType b);
-	bool implicitlyConvertibleToT(ExprType a);
-	bool inLocalScope(std::string name); // is IDN.ime in local scope
-	void declareVariable(std::string name, ExprType tip); // zabiljezi deklaraciju IDN.ime s odgovarajucim tipom
+	inline bool implicitlyConvertibleToT(ExprType a) {
+	    return Msaga::implicitlyConvertible(a, ExprType::Int) || Msaga::implicitlyConvertible(a, ExprType::Char);
+    }
+
+    Identifier* getIdentifier(const std::string &name);
+	bool inLocalScope(const std::string &name); // is IDN.ime in local scope
+	void declareIdentifier(const std::string &name, ExprType tip, bool isLValue, bool isDefined, const FunctionType &ft); 
+    void declareParameters(const std::vector<std::string> &names, const std::vector<ExprType> &types);
 
     inline bool isArrayType(ExprType a) {
         return a == ExprType::ArrayChar || a == ExprType::ArrayInt || a == ExprType::ArrayConstChar || a == ExprType::ArrayConstInt;
@@ -81,13 +81,17 @@ namespace Msaga {
     inline bool isConst(ExprType a) {
         return a == ExprType::ConstChar || a == ExprType::ConstInt;
     }
+    inline bool notConstT(ExprType a) {
+        return a == ExprType::Char || a == ExprType::Int || a == ExprType::Void;
+    }
 	inline bool isConstArray(ExprType a) {
         return a == ExprType::ArrayConstChar || a == ExprType::ArrayConstInt;
     }
 	inline bool isNumber(ExprType a) {
 		return a == ExprType::Char || a == ExprType::Int;
 	}
+    bool isValidChar(const std::string &s);
+    bool isValidCharArray(const std::string &s);
 }
-
 
 #endif // GLOBAL_H

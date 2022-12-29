@@ -49,9 +49,12 @@ public:
  * 
  */
 class AssignmentExpression : public GenericExpression {
+protected:
+    int m_characterArrayLength;
 public:
     void check() override;
 
+    [[nodiscard]] inline int getCharacterArrayLength() const { return m_characterArrayLength; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::AssignmentExpression; }
 };
 
@@ -88,7 +91,6 @@ private:
 
 public:
 	PostfixExpression() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
 	void check() override;
 
 	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }

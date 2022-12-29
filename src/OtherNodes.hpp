@@ -62,12 +62,12 @@ public:
 
     [[nodiscard]] inline std::vector<ExprType> getExprTypes() const { return m_exprTypes; }
     [[nodiscard]] inline int getSize() const { return m_exprTypes.size(); }
-    [[nodiscard]] inline ExprType getType(int i) const {
-        DebugAssert(i < 0 || i >= m_exprTypes.size(), "Index out of range");
+    [[nodiscard]] inline ExprType getType(size_t i) const {
+        DebugAssert(i >= m_exprTypes.size(), "Index out of range");
         return m_exprTypes[i];
     }
-    inline void setType(ExprType exprType, int i) {
-        DebugAssert(i < 0 || i >= m_exprTypes.size(), "Index out of range");
+    inline void setType(ExprType exprType, size_t i) {
+        DebugAssert(i >= m_exprTypes.size(), "Index out of range");
         m_exprTypes[i] = exprType;
     }
 

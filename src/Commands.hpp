@@ -15,8 +15,6 @@ protected:
 
 public:
     [[nodiscard]] inline ExprType getExprType() const { return m_exprType; }
-
-    inline void setExprType(ExprType exprType) { m_exprType = exprType; }
 };
 
 /**
@@ -24,18 +22,8 @@ public:
  * 
  */
 class ComplexCommand : public GenericCommand {
-private:
-	Msaga::FunctionType *m_functionType = nullptr;
-	SyntaxTreeNode *m_insideLoop = nullptr;
-
 public:
-	ComplexCommand() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
     void check() override;
-
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ComplexCommand; }
 };
 
@@ -44,18 +32,9 @@ public:
  * 
  */
 class ListCommand : public GenericCommand {
-private:
-	Msaga::FunctionType *m_functionType = nullptr;
-	SyntaxTreeNode *m_insideLoop = nullptr;
-
 public:
-	ListCommand() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
     void check() override;
 
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ListCommand; }
 };
 
@@ -64,18 +43,9 @@ public:
  * 
  */
 class Command : public GenericCommand {
-private:
-	Msaga::FunctionType *m_functionType = nullptr;
-	SyntaxTreeNode *m_insideLoop = nullptr;
-
 public:
-	Command() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
     void check() override;
 
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::Command; }
 };
 
@@ -95,18 +65,9 @@ public:
  * 
  */
 class BranchCommand : public GenericCommand {
-private:
-	Msaga::FunctionType *m_functionType = nullptr;
-	SyntaxTreeNode *m_insideLoop = nullptr;
-
 public:
-	BranchCommand() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
     void check() override;
 
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BranchCommand; }
 };
 
@@ -125,20 +86,20 @@ public:
  * @brief <naredba_skoka>
  * 
  */
-class GotoCommand : public GenericCommand {
+class JumpCommand : public GenericCommand {
 private:
 	Msaga::FunctionType *m_functionType = nullptr;
 	SyntaxTreeNode *m_insideLoop = nullptr;
 
 public:
-	GotoCommand() = default;
+	JumpCommand() = default;
 	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
+	inline void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
+	[[nodiscard]] inline bool isInsideLoop() const { return m_insideLoop != nullptr; }
     void check() override;
 
 	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::GotoCommand; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::JumpCommand; }
 };
 
 /**
@@ -146,18 +107,9 @@ public:
  * 
  */
 class TranslationUnit : public GenericCommand {
-private:
-	Msaga::FunctionType *m_functionType = nullptr;
-	SyntaxTreeNode *m_insideLoop = nullptr;
-
 public:
-	TranslationUnit() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
     void check() override;
 
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::TranslationUnit; }
 };
 
@@ -166,18 +118,9 @@ public:
  * 
  */
 class ExternalDeclaration : public GenericCommand {
-private:
-	Msaga::FunctionType *m_functionType = nullptr;
-	SyntaxTreeNode *m_insideLoop = nullptr;
-
 public:
-	ExternalDeclaration() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	SyntaxTreeNode* isInsideLoop() { return m_insideLoop; }
     void check() override;
 
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ExternalDeclaration; }
 };
 

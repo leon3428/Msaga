@@ -247,53 +247,53 @@ public:
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafSemicolon; }
 };
 
-class LeafKrIf : public GenericLeaf {
+class LeafKwIf : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrIf; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwIf; }
 };
 
-class LeafKrElse : public GenericLeaf {
+class LeafKwElse : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrElse; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwElse; }
 };
 
-class LeafKrWhile : public GenericLeaf {
+class LeafKwWhile : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrWhile; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwWhile; }
 };
 
-class LeafKrFor : public GenericLeaf {
+class LeafKwFor : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrFor; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwFor; }
 };
 
-class LeafKrContinue : public GenericLeaf {
+class LeafKwContinue : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrContinue; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwContinue; }
 };
 
-class LeafKrBreak : public GenericLeaf {
+class LeafKwBreak : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrBreak; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwBreak; }
 };
 
-class LeafKrReturn : public GenericLeaf {
+class LeafKwReturn : public GenericLeaf {
 public:
     using GenericLeaf::GenericLeaf;
 
-    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKrReturn; }
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafKwReturn; }
 };
 
 class LeafLeftCurlyBracket : public GenericLeaf {

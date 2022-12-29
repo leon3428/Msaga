@@ -2,19 +2,36 @@
 #include "Leafs.hpp"
 #include "Common.hpp"
 #include "OtherNodes.hpp"
+#include <string>
 
 void PrimaryExpression::check() {
     if(checkChildren<NodeType::LeafIdn>()) {
         LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
-        m_exprType = Global::identifierTable[l -> getLexicalUnit()].exprType;
-        m_isLValue = Global::identifierTable[l -> getLexicalUnit()].LValue;
+        auto p = Msaga::getIdentifier(l -> getLexicalUnit());
+        if(p == nullptr)
+            m_errorHandler();
+
+        m_exprType = p -> exprType;
+        m_isLValue = p -> LValue;
     } else if(checkChildren<NodeType::LeafNum>()) {
+        LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
+        if(std::stoi(l -> getLexicalUnit()) < -(1<<32) || std::stoi(l -> getLexicalUnit()) >= (1<<31))
+            m_errorHandler();
+
         m_exprType = ExprType::Int;
         m_isLValue = false;
     } else if(checkChildren<NodeType::LeafCharacter>()) {
+        LeafCharacter *l = static_cast<LeafCharacter *>(m_children[0].get());
+        if(!Msaga::isValidChar(l -> getLexicalUnit()))
+            m_errorHandler();
+
         m_exprType = ExprType::Char;
         m_isLValue = false;
     } else if(checkChildren<NodeType::LeafCharArray>()) {
+        LeafCharArray *l = static_cast<LeafCharArray*>(m_children[0].get());
+        if(!Msaga::isValidCharArray(l -> getLexicalUnit()))
+            m_errorHandler();
+
         m_exprType = ExprType::ArrayConstChar;
         m_isLValue = false;
     } else if(checkChildren<NodeType::LeafLeftBracket, NodeType::Expression, NodeType::LeafRightBracket>()){
@@ -60,7 +77,8 @@ void AssignmentExpression::check() {
         AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[2].get());
 
         pExpr -> check();
-        pExpr -> setLValue(true);
+        if(!pExpr -> isLValue())
+            m_errorHandler();
         aExpr -> check();
         if(!Msaga::implicitlyConvertible(aExpr -> getExprType(), pExpr -> getExprType()))
             m_errorHandler();
@@ -339,7 +357,7 @@ void UnaryExpression::check() {
     } else if(checkChildren<NodeType::LeafInc, NodeType::UnaryExpression>() ||
               checkChildren<NodeType::LeafDec, NodeType::UnaryExpression>() )
     {
-        UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[0].get());
+        UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[1].get());
         uExpr -> check();
         if(!(uExpr -> isLValue() && Msaga::implicitlyConvertible(uExpr -> getExprType(), ExprType::Int)))
             m_errorHandler();
@@ -398,7 +416,7 @@ void PostfixExpression::check() {
         al -> check();
 
         Msaga::FunctionType *ft = pExpr -> getFunctionType();
-        if(pExpr -> getExprType() == ExprType::Function && ft != nullptr) {
+        if(pExpr -> getExprType() == ExprType::Function && ft != nullptr && ft -> argumentsTypes.size() == al -> getSize()) {
             bool compatible = true;
             for(int i = 0;i < al -> getSize(); i++)
                 compatible = compatible && Msaga::implicitlyConvertible(al -> getType(i), ft -> argumentsTypes[i]);

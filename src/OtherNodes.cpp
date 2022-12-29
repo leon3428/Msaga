@@ -24,11 +24,11 @@ void TypeName::check() {
 
 void TypeSpecifier::check() {
     if(checkChildren<NodeType::LeafKwVoid>()) {
-        m_exprType == ExprType::Void;
+        m_exprType = ExprType::Void;
     } else  if(checkChildren<NodeType::LeafKwChar>()) {
-        m_exprType == ExprType::Char;
+        m_exprType = ExprType::Char;
     } else  if(checkChildren<NodeType::LeafKwInt>()) {
-        m_exprType == ExprType::Int;
+        m_exprType = ExprType::Int;
     } else {
         m_errorHandler();
     }

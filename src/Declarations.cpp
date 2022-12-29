@@ -8,29 +8,87 @@
 #include <iostream>
 
 void FunctionDefinition::check() {
-    
+    if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
+	   NodeType::LeafKwVoid, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
+	{
+		TypeName *tn = static_cast<TypeName*>(m_children[0].get());
+		tn -> check();
+		if(!Msaga::notConstT(tn -> getExprType()))
+			m_errorHandler();
+
+		LeafIdn *lIdn = static_cast<LeafIdn*>(m_children[1].get());
+
+		Msaga::Identifier *idn = Msaga::getIdentifier(lIdn -> getLexicalUnit());
+		if(idn != nullptr && idn -> defined)
+			m_errorHandler();
+		
+		if(idn != nullptr && idn -> exprType == ExprType::Function && 
+			(idn -> functionType -> returnType != tn -> getExprType() ||
+			 idn -> functionType -> argumentsTypes.size() != 1 ||
+			 idn -> functionType -> argumentsTypes[0] != ExprType::Void))
+		{
+			m_errorHandler();
+		}
+
+
+		Msaga::declareIdentifier(lIdn -> getLexicalUnit(), ExprType::Function, false, true, {{ExprType::Void}, tn -> getExprType()});
+		m_children[5] -> check();
+
+	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
+	   NodeType::ParameterList, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
+	{
+		TypeName *tn = static_cast<TypeName*>(m_children[0].get());
+		tn -> check();
+		if(!Msaga::notConstT(tn -> getExprType()))
+			m_errorHandler();
+
+		LeafIdn *lIdn = static_cast<LeafIdn*>(m_children[1].get());
+
+		Msaga::Identifier *idn = Msaga::getIdentifier(lIdn -> getLexicalUnit());
+		if(idn != nullptr && idn -> defined)
+			m_errorHandler();
+		
+		ParameterList *pl = static_cast<ParameterList*>(m_children[3].get());
+		pl -> check();
+
+		if(idn != nullptr && idn -> exprType == ExprType::Function && 
+			(idn -> functionType -> returnType != tn -> getExprType() ||
+			 idn -> functionType -> argumentsTypes.size() != pl -> getSize() ||
+			 idn -> functionType -> argumentsTypes != pl -> getTypes()))
+		{
+			m_errorHandler();
+		}
+
+		Msaga::declareIdentifier(lIdn -> getLexicalUnit(), ExprType::Function, false, true, {pl -> getTypes(), tn -> getExprType()});
+		Msaga::declareParameters(pl -> getNames(), pl -> getTypes());
+		m_children[5] -> check();
+
+	} else {
+		m_errorHandler();
+	}
 }
 
 void ParameterList::check() {
 	if(checkChildren<NodeType::ParameterDeclaration>()) {
-		ParameterDeclaration *decl = static_cast<ParameterDeclaration *>(m_children[0].get());
+		ParameterDeclaration *decl = static_cast<ParameterDeclaration*>(m_children[0].get());
 		decl -> check();
-		this -> addName(decl -> getName());
-		this -> addType(decl -> getExprType());
+		m_names = { decl -> getName() };
+		m_types = { decl -> getExprType() };
+
 	} else if(checkChildren<NodeType::ParameterList, NodeType::LeafComma, NodeType::ParameterDeclaration>()) {
-		ParameterList *list = static_cast<ParameterList *>(m_children[0].get());
+		ParameterList *list = static_cast<ParameterList*>(m_children[0].get());
 		list -> check();
 		ParameterDeclaration *decl = static_cast<ParameterDeclaration *>(m_children[2].get());
 		decl -> check();
 
-		this -> setNames(list -> getNames());
-		for(std::string name : this -> getNames())
+		for(const std::string &name : m_names)
 			if(name == decl -> getName())
 				m_errorHandler();
 
-		this -> addName(decl -> getName());
-		this -> setTypes(list -> getTypes());
-		this -> addType(list -> getExprType());
+		m_types = list -> getTypes();
+		m_types.push_back(decl -> getExprType());
+		m_names = list -> getNames();
+		m_names.push_back(decl -> getName());
 	} else{
 		m_errorHandler();
 	}
@@ -38,23 +96,25 @@ void ParameterList::check() {
 
 void ParameterDeclaration::check() {
 	if(checkChildren<NodeType::TypeName, NodeType::LeafIdn>()) {
-		TypeName *tip = static_cast<TypeName *>(m_children[0].get());
-		tip -> check();
-		if(tip -> getExprType() == ExprType::Void)
+		TypeName *tn = static_cast<TypeName*>(m_children[0].get());
+		tn -> check();
+		if(tn -> getExprType() == ExprType::Void)
 			m_errorHandler();
-		LeafIdn *idn = static_cast<LeafIdn *>(m_children[1].get());
 
-		this -> setName(idn -> getLexicalUnit());
-		this -> setExprType(tip -> getExprType());
+		LeafIdn *idn = static_cast<LeafIdn*>(m_children[1].get());
+
+		m_exprType = tn -> getExprType();
+		m_name = idn -> getLexicalUnit();
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftSquareBracket, NodeType::LeafRightSquareBracket>()) {
-		TypeName *tip = static_cast<TypeName *>(m_children[0].get());
-		tip -> check();
-		if(tip -> getExprType() == ExprType::Void)
+		TypeName *tn = static_cast<TypeName *>(m_children[0].get());
+		tn -> check();
+		if(tn -> getExprType() == ExprType::Void)
 			m_errorHandler();
+		
 		LeafIdn *idn = static_cast<LeafIdn *>(m_children[1].get());
 
-		this -> setName(idn -> getLexicalUnit());
-		this -> setExprType(Msaga::baseTypeToArray(tip -> getExprType()));
+		m_exprType = Msaga::baseTypeToArray(tn -> getExprType());
+		m_name = idn -> getLexicalUnit();
 	} else{
 		m_errorHandler();
 	}
@@ -62,13 +122,10 @@ void ParameterDeclaration::check() {
 
 void DeclarationList::check() {
 	if(checkChildren<NodeType::Declaration>()) {
-		Declaration *decl = static_cast<Declaration *>(m_children[0].get());
-		decl -> check();
+		m_children[0] -> check();
 	} else if(checkChildren<NodeType::DeclarationList, NodeType::Declaration>()) {
-		DeclarationList *declList = static_cast<DeclarationList *>(m_children[0].get());
-		declList -> check();
-		Declaration *decl = static_cast<Declaration *>(m_children[1].get());
-		decl -> check();
+		m_children[0] -> check();
+		m_children[1] -> check();
 	} else{
 		m_errorHandler();
 	}
@@ -76,10 +133,11 @@ void DeclarationList::check() {
 
 void Declaration::check() {
 	if(checkChildren<NodeType::TypeName, NodeType::DeclaratorInitList, NodeType::LeafSemicolon>()) {
-		Declaration *tip = static_cast<Declaration *>(m_children[0].get());
-		tip -> check();
+		TypeName *tn = static_cast<TypeName*>(m_children[0].get());
+		tn -> check();
+
 		DeclaratorInitList *declList = static_cast<DeclaratorInitList*>(m_children[1].get());
-		declList -> setNtype(tip -> getExprType());
+		declList -> setNtype(tn -> getExprType());
 		declList -> check();
 	} else{
 		m_errorHandler();
@@ -89,14 +147,14 @@ void Declaration::check() {
 void DeclaratorInitList::check() {
 	if(checkChildren<NodeType::InitDeclarator>()) {
 		InitDeclarator *decl = static_cast<InitDeclarator *>(m_children[0].get());
-		decl -> setNtype(this -> getNtype());
+		decl -> setNtype(m_ntype);
 		decl -> check();
 	} else if(checkChildren<NodeType::DeclaratorInitList, NodeType::LeafComma, NodeType::InitDeclarator>()) {
 		DeclaratorInitList *declList = static_cast<DeclaratorInitList*>(m_children[0].get());				
-		declList -> setNtype(this -> getNtype());
+		declList -> setNtype(m_ntype);
 		declList -> check();
 		InitDeclarator *declInit = static_cast<InitDeclarator*>(m_children[2].get());
-		declInit -> setNtype(this -> getNtype());
+		declInit -> setNtype(m_ntype);
 		declInit -> check();
 	} else{
 		m_errorHandler();
@@ -106,25 +164,29 @@ void DeclaratorInitList::check() {
 void InitDeclarator::check() {
 	if(checkChildren<NodeType::DirectDeclarator>()) {
 		DirectDeclarator *decl = static_cast<DirectDeclarator *>(m_children[0].get());
-		decl -> setNtype(this -> getNtype());
+		decl -> setNtype(m_ntype);
 		decl -> check();
-		if(Msaga::isConst(decl -> getExprType()) || Msaga::isConstArray(decl -> getExprType()))
+		if(!Msaga::notConstT(decl -> getExprType()) || Msaga::isConstArray(decl -> getExprType()))
 			m_errorHandler();
-	} else if(checkChildren<NodeType::DirectDeclarator, NodeType::LeafAssignment, NodeType::Initializator>()) {
+
+	} else if(checkChildren<NodeType::DirectDeclarator, NodeType::LeafAssignment, NodeType::Initializer>()) {
 		DirectDeclarator *decl = static_cast<DirectDeclarator *>(m_children[0].get());
-		decl -> setNtype(this -> getNtype());
+		decl -> setNtype(m_ntype);
 		decl -> check();
-		Initializator *init = static_cast<Initializator *>(m_children[2].get());
+
+		Initializer *init = static_cast<Initializer *>(m_children[2].get());
 		init -> check();
+
 		if(Msaga::isConst(decl -> getExprType()) || Msaga::isNumber(decl -> getExprType())) {
-			if(!Msaga::implicitlyConvertibleToT(init -> getExprType()))
+			if(!Msaga::implicitlyConvertibleToT(init -> getType(0)))
 				m_errorHandler();
 		} else if(Msaga::isArrayType(decl -> getExprType())) {
-			if(init -> getElementCnt() > decl -> getElementCnt())
+			if(init -> getElementCount() > decl -> getElementCnt())
 				m_errorHandler();
-			for(auto tip : init -> getTypes())
-				if(!Msaga::implicitlyConvertibleToT(tip))
-					m_errorHandler(); // malo mi je upitno ovo
+			for(int i = 0;i < init -> getElementCount(); i++) {
+				if(!Msaga::implicitlyConvertible(init -> getType(i), Msaga::arrayBaseType(decl -> getExprType())))
+					m_errorHandler();
+			}
 		} else {
 			m_errorHandler();
 		}
@@ -135,50 +197,82 @@ void InitDeclarator::check() {
 
 void DirectDeclarator::check() {
 	if(checkChildren<NodeType::LeafIdn>()) {
-		if(this -> getNtype() == ExprType::Void)
+		if(m_ntype == ExprType::Void)
 			m_errorHandler();
 		
 		LeafIdn *idn = static_cast<LeafIdn *>(m_children[0].get());
 		if(Msaga::inLocalScope(idn -> getLexicalUnit()))
 			m_errorHandler();
-		this -> setExprType(this -> getNtype());
-		Msaga::declareVariable(idn -> getLexicalUnit(), this -> getExprType());
+		
+		m_exprType = m_ntype;
+		Msaga::declareIdentifier(idn -> getLexicalUnit(), m_exprType, true, true, nullptr);
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftSquareBracket, NodeType::LeafNum, NodeType::LeafRightSquareBracket>()) {
-		LeafNum *num = static_cast<LeafNum *>(m_children[2].get()); 
-		int cnt = std::stoi(num -> getLexicalUnit());
-
-		if(this -> getNtype() == ExprType::Void)
+		if(m_ntype == ExprType::Void)
 			m_errorHandler();
 		LeafIdn *idn = static_cast<LeafIdn *>(m_children[0].get());
 		if(Msaga::inLocalScope(idn -> getLexicalUnit()))
 			m_errorHandler();
+
+		LeafNum *num = static_cast<LeafNum *>(m_children[2].get()); 
+		int cnt = std::stoi(num -> getLexicalUnit());
 		if(cnt <= 0 || cnt > 1024)
 			m_errorHandler();
-		this -> setElementCnt(cnt);
-		this -> setExprType(Msaga::baseTypeToArray(this -> getNtype()));
-		Msaga::declareVariable(idn -> getLexicalUnit(), this -> getExprType());
+
+		m_elementCnt = cnt;
+		m_exprType = Msaga::baseTypeToArray(m_ntype);
+		Msaga::declareIdentifier(idn -> getLexicalUnit(), m_exprType, false, true, nullptr);
+
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::LeafKwVoid, NodeType::LeafRightBracket>()) {
-		; // TODO
+		LeafIdn *idnLeaf = static_cast<LeafIdn *>(m_children[0].get());
+		Msaga::Identifier *idn = Msaga::getIdentifier(idnLeaf -> getLexicalUnit());
+		if(idn != nullptr && idn -> exprType == ExprType::Function &&
+		   (idn -> functionType -> returnType != m_ntype ||
+		    idn -> functionType -> argumentsTypes.size() != 1 ||
+			idn -> functionType -> argumentsTypes[0] != ExprType::Void))
+		{
+			m_errorHandler();
+		} else {
+			Msaga::declareIdentifier(idnLeaf -> getLexicalUnit(), ExprType::Function, false, false, {{ExprType::Void}, m_ntype});
+		}
+		m_exprType = ExprType::Function;
+		// TODO
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::ParameterList, NodeType::LeafRightBracket>()) {
 		ParameterList *list = static_cast<ParameterList *>(m_children[2].get());
 		list -> check();
-		// TODO
+		
+		LeafIdn *idnLeaf = static_cast<LeafIdn *>(m_children[0].get());
+		Msaga::Identifier *idn = Msaga::getIdentifier(idnLeaf -> getLexicalUnit());
+
+		if(idn != nullptr && idn -> exprType == ExprType::Function && 
+			(idn -> functionType -> returnType != m_ntype ||
+			 idn -> functionType -> argumentsTypes.size() != list -> getSize() ||
+			 idn -> functionType -> argumentsTypes != list -> getTypes()))
+		{
+			m_errorHandler();
+		}
+
+		Msaga::declareIdentifier(idnLeaf -> getLexicalUnit(), ExprType::Function, false, false, {list -> getTypes(), m_exprType});
 	}
 	else {
 		m_errorHandler();
 	}
 }
 
-void Initializator::check() {
+void Initializer::check() {
 	if(checkChildren<NodeType::AssignmentExpression>()) {
 		AssignmentExpression *expr = static_cast<AssignmentExpression *>(m_children[0].get());
 		expr -> check();
-		// TODO: NEKAK PROVJERIT JEL EXPR IDE U NIZ_ZNAKOVA I OSTATAK
+		
+		if(expr -> getCharacterArrayLength() > 0) {
+			m_types = {expr -> getCharacterArrayLength(), ExprType::Char };
+		} else {
+			m_types = {expr -> getExprType() };
+		}
 	} else if(checkChildren<NodeType::LeafLeftCurlyBracket, NodeType::JoinExpressionList, NodeType::LeafRightCurlyBracket>()) {
 		JoinExpressionList *list = static_cast<JoinExpressionList *>(m_children[0].get());
 		list -> check();
-		this -> setElementCnt(list -> getElementCnt());
-		this -> setTypes(list -> getTypes());
+
+		m_types = list -> getTypes();
 	}
 	else {
 		m_errorHandler();
@@ -189,17 +283,16 @@ void JoinExpressionList::check() {
 	if(checkChildren<NodeType::AssignmentExpression>()) {
 		AssignmentExpression *expr = static_cast<AssignmentExpression *>(m_children[0].get());
 		expr -> check();
-		this -> setElementCnt(1);
-		this -> addType(expr -> getExprType());
+
+		m_types = {expr -> getExprType()};
 	} else if(checkChildren<NodeType::JoinExpressionList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
 		JoinExpressionList *list = static_cast<JoinExpressionList *>(m_children[0].get());
 		list -> check();
 		AssignmentExpression *expr = static_cast<AssignmentExpression *>(m_children[2].get());
 		expr -> check();
 
-		this -> setElementCnt(list -> getElementCnt() + 1);
-		this -> setTypes(list -> getTypes());
-		this -> addType(expr -> getExprType());
+		m_types = list -> getTypes();
+		m_types.push_back(expr -> getExprType());
 	}
 	else {
 		m_errorHandler();

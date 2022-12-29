@@ -1,10 +1,7 @@
 #include "Common.hpp"
 
-std::unordered_map<std::string, Msaga::Identifier> Global::identifierTable;
-
-
 // true if a can be implicitly converted to b
-bool implicitlyConvertible(ExprType a, ExprType b) {
+bool Msaga::implicitlyConvertible(ExprType a, ExprType b) {
     if(a == b)
         return true;
 
@@ -33,10 +30,6 @@ bool implicitlyConvertible(ExprType a, ExprType b) {
     return false;
 }
 
-bool implicitlyConvertibleToT(ExprType a) {
-	return implicitlyConvertible(a, ExprType::Int) || implicitlyConvertible(a, ExprType::Char);
-}
-
 ExprType Msaga::arrayBaseType(ExprType a) {
     if(a == ExprType::ArrayChar)
         return ExprType::Char;
@@ -49,6 +42,8 @@ ExprType Msaga::arrayBaseType(ExprType a) {
 
     if(a == ExprType::ArrayConstInt)
         return ExprType::ConstInt;
+
+    return ExprType::Void;
 }
 
 ExprType Msaga::baseTypeToArray(ExprType a) {
@@ -67,3 +62,23 @@ ExprType Msaga::baseTypeToArray(ExprType a) {
 
 Msaga::FunctionType::FunctionType(const std::vector<ExprType> &argsTypes, ExprType retType) 
     : argumentsTypes(argsTypes), returnType(retType) {}
+
+bool Msaga::isValidChar(const std::string &s) {
+    if(s.size() == 1)
+        return true;
+    if(s.size() == 2 && (s == "\\t" || s == "\\n" || s == "\\0" || s == "\\'" || s == "\\\"" || s == "\\\\"))
+        return true;
+    return false;
+}
+
+bool isValidCharArray(const std::string &s) {
+    for(int i = 0;i < s.size(); i++) {
+        if(s[i] == '\\') {
+            if(i + 1 >= s.size() - 1)
+                return false;
+            if(s[i+1] != 't' || s[i+1] != 'n' || s[i+1] != '0' || s[i+1] != '\'' || s[i+1] != '\"' || s[i+1] != '\\')
+                return false;
+        }
+    }
+    return true;
+}
