@@ -18,20 +18,22 @@ void FunctionDefinition::check() {
 
 		LeafIdn *lIdn = static_cast<LeafIdn*>(m_children[1].get());
 
-		Msaga::Identifier *idn = Msaga::getIdentifier(lIdn -> getLexicalUnit());
-		if(idn != nullptr && idn -> defined)
-			m_errorHandler();
-		
-		if(idn != nullptr && idn -> exprType == ExprType::Function && 
-			(idn -> functionType -> returnType != tn -> getExprType() ||
-			 idn -> functionType -> argumentsTypes.size() != 1 ||
-			 idn -> functionType -> argumentsTypes[0] != ExprType::Void))
-		{
-			m_errorHandler();
+		Identifier *idn = m_localContext -> getIdentifier(lIdn -> getLexicalUnit());
+		if(idn != nullptr) {
+			if(idn -> exprType != ExprType::Function || idn -> defined)
+				m_errorHandler();
+
+			if(idn -> functionType -> returnType != tn -> getExprType() ||
+			   idn -> functionType -> argumentsTypes.size() != 1 ||
+			   idn -> functionType -> argumentsTypes[0] != ExprType::Void)
+			{
+				m_errorHandler();
+			}
+			idn -> defined = true;
+		} else {
+			m_localContext -> declareFunction(lIdn -> getLexicalUnit(), true, {{ExprType::Void}, tn -> getExprType()});
 		}
 
-
-		Msaga::declareIdentifier(lIdn -> getLexicalUnit(), ExprType::Function, false, true, {{ExprType::Void}, tn -> getExprType()});
 		m_children[5] -> check();
 
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
@@ -43,24 +45,28 @@ void FunctionDefinition::check() {
 			m_errorHandler();
 
 		LeafIdn *lIdn = static_cast<LeafIdn*>(m_children[1].get());
-
-		Msaga::Identifier *idn = Msaga::getIdentifier(lIdn -> getLexicalUnit());
-		if(idn != nullptr && idn -> defined)
+		Identifier *idn = m_localContext -> getIdentifier(lIdn -> getLexicalUnit());
+		if(idn != nullptr && (idn -> exprType != ExprType::Function || idn -> defined))
 			m_errorHandler();
 		
 		ParameterList *pl = static_cast<ParameterList*>(m_children[3].get());
 		pl -> check();
 
-		if(idn != nullptr && idn -> exprType == ExprType::Function && 
-			(idn -> functionType -> returnType != tn -> getExprType() ||
-			 idn -> functionType -> argumentsTypes.size() != pl -> getSize() ||
-			 idn -> functionType -> argumentsTypes != pl -> getTypes()))
-		{
-			m_errorHandler();
-		}
+		if(idn != nullptr) {
+			if(idn -> functionType -> returnType != tn -> getExprType() ||
+			   idn -> functionType -> argumentsTypes.size() != pl -> getSize() ||
+			   idn -> functionType -> argumentsTypes != pl -> getTypes())
+			{
+				m_errorHandler();
+			}
 
-		Msaga::declareIdentifier(lIdn -> getLexicalUnit(), ExprType::Function, false, true, {pl -> getTypes(), tn -> getExprType()});
-		Msaga::declareParameters(pl -> getNames(), pl -> getTypes());
+			idn -> defined = true;
+		} else {
+			m_localContext -> declareFunction(lIdn -> getLexicalUnit(), true, {pl -> getTypes(), tn -> getExprType()});
+			for(int i = 0;i < pl -> getSize();i++) {
+				m_localContext -> declareVariable(pl -> getName(i), pl -> getType(i));
+			}
+		}
 		m_children[5] -> check();
 
 	} else {
@@ -201,16 +207,17 @@ void DirectDeclarator::check() {
 			m_errorHandler();
 		
 		LeafIdn *idn = static_cast<LeafIdn *>(m_children[0].get());
-		if(Msaga::inLocalScope(idn -> getLexicalUnit()))
+		if(m_localContext -> inLocalScope(idn -> getLexicalUnit()))
 			m_errorHandler();
 		
 		m_exprType = m_ntype;
-		Msaga::declareIdentifier(idn -> getLexicalUnit(), m_exprType, true, true, nullptr);
+
+		m_localContext -> declareVariable(idn -> getLexicalUnit(), m_exprType);
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftSquareBracket, NodeType::LeafNum, NodeType::LeafRightSquareBracket>()) {
 		if(m_ntype == ExprType::Void)
 			m_errorHandler();
 		LeafIdn *idn = static_cast<LeafIdn *>(m_children[0].get());
-		if(Msaga::inLocalScope(idn -> getLexicalUnit()))
+		if(m_localContext -> inLocalScope(idn -> getLexicalUnit()))
 			m_errorHandler();
 
 		LeafNum *num = static_cast<LeafNum *>(m_children[2].get()); 
@@ -220,38 +227,33 @@ void DirectDeclarator::check() {
 
 		m_elementCnt = cnt;
 		m_exprType = Msaga::baseTypeToArray(m_ntype);
-		Msaga::declareIdentifier(idn -> getLexicalUnit(), m_exprType, false, true, nullptr);
+		m_localContext -> declareVariable(idn -> getLexicalUnit(), m_exprType);
 
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::LeafKwVoid, NodeType::LeafRightBracket>()) {
 		LeafIdn *idnLeaf = static_cast<LeafIdn *>(m_children[0].get());
-		Msaga::Identifier *idn = Msaga::getIdentifier(idnLeaf -> getLexicalUnit());
-		if(idn != nullptr && idn -> exprType == ExprType::Function &&
-		   (idn -> functionType -> returnType != m_ntype ||
-		    idn -> functionType -> argumentsTypes.size() != 1 ||
-			idn -> functionType -> argumentsTypes[0] != ExprType::Void))
-		{
-			m_errorHandler();
+		if(m_localContext -> inLocalScope(idnLeaf -> getLexicalUnit())) {
+			Identifier *idn = m_localContext -> getIdentifier(idnLeaf -> getLexicalUnit());
+			if(idn -> exprType != ExprType::Function || *(idn -> functionType) != Msaga::FunctionType({ExprType::Void}, m_ntype))
+				m_errorHandler();	
 		} else {
-			Msaga::declareIdentifier(idnLeaf -> getLexicalUnit(), ExprType::Function, false, false, {{ExprType::Void}, m_ntype});
+			m_localContext -> declareFunction(idnLeaf -> getLexicalUnit(), false, {{ExprType::Void}, m_ntype});
 		}
-		m_exprType = ExprType::Function;
-		// TODO
+		m_exprType = ExprType::Function; // Check
+
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::ParameterList, NodeType::LeafRightBracket>()) {
 		ParameterList *list = static_cast<ParameterList *>(m_children[2].get());
 		list -> check();
 		
 		LeafIdn *idnLeaf = static_cast<LeafIdn *>(m_children[0].get());
-		Msaga::Identifier *idn = Msaga::getIdentifier(idnLeaf -> getLexicalUnit());
 
-		if(idn != nullptr && idn -> exprType == ExprType::Function && 
-			(idn -> functionType -> returnType != m_ntype ||
-			 idn -> functionType -> argumentsTypes.size() != list -> getSize() ||
-			 idn -> functionType -> argumentsTypes != list -> getTypes()))
-		{
-			m_errorHandler();
+		if(m_localContext -> inLocalScope(idnLeaf -> getLexicalUnit())) {
+			Identifier *idn = m_localContext -> getIdentifier(idnLeaf -> getLexicalUnit());
+			if(idn -> exprType != ExprType::Function || *(idn -> functionType) != Msaga::FunctionType(list -> getTypes(), m_ntype))
+				m_errorHandler();	
+		} else {
+			m_localContext -> declareFunction(idnLeaf -> getLexicalUnit(), false, {list -> getTypes(), m_ntype});
 		}
-
-		Msaga::declareIdentifier(idnLeaf -> getLexicalUnit(), ExprType::Function, false, false, {list -> getTypes(), m_exprType});
+		m_exprType = ExprType::Function; // Check
 	}
 	else {
 		m_errorHandler();

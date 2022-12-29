@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include "Common.hpp"
+#include "Context.hpp"
 
 /**
  * @brief most generic class of the tree
@@ -13,6 +14,7 @@
 class SyntaxTreeNode {
 protected:
     std::vector<std::unique_ptr<SyntaxTreeNode> > m_children;   ///> child nodes
+    ContextNode* m_localContext; 
 
     void m_errorHandler();
     
@@ -40,6 +42,8 @@ public:
 
         return m_children.back().get();
     }
+
+    [[nodiscard]] inline ContextNode* getLocalContextNode() { return m_localContext; }
 };
 
 #endif //SYNTAX_TREE_H

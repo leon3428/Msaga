@@ -47,17 +47,19 @@ enum class ExprType : int8_t {
 
 
 namespace Msaga {
-    struct Identifier {
-        ExprType exprType;
-        bool LValue;
-        bool defined;
-        FunctionType *functionType;
-    };
-
+    
     struct FunctionType {
         std::vector<ExprType> argumentsTypes;
         ExprType returnType;
 
+        inline bool operator==(const FunctionType& other) const {
+            return argumentsTypes == other.argumentsTypes && returnType == other.returnType;
+        }
+
+        inline bool operator!=(const FunctionType& other) const {
+            return argumentsTypes != other.argumentsTypes || returnType != other.returnType;
+        }
+        
         FunctionType(const std::vector<ExprType> &argsTypes, ExprType retType);
     };
 
@@ -65,11 +67,6 @@ namespace Msaga {
 	inline bool implicitlyConvertibleToT(ExprType a) {
 	    return Msaga::implicitlyConvertible(a, ExprType::Int) || Msaga::implicitlyConvertible(a, ExprType::Char);
     }
-
-    Identifier* getIdentifier(const std::string &name);
-	bool inLocalScope(const std::string &name); // is IDN.ime in local scope
-	void declareIdentifier(const std::string &name, ExprType tip, bool isLValue, bool isDefined, const FunctionType &ft); 
-    void declareParameters(const std::vector<std::string> &names, const std::vector<ExprType> &types);
 
     inline bool isArrayType(ExprType a) {
         return a == ExprType::ArrayChar || a == ExprType::ArrayInt || a == ExprType::ArrayConstChar || a == ExprType::ArrayConstInt;

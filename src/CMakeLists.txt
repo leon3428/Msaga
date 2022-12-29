@@ -5,6 +5,7 @@ add_executable(${PROJECT_NAME}
     Leafs.cpp
     Common.cpp
     OtherNodes.cpp
+    Context.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

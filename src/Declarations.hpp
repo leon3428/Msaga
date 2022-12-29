@@ -28,9 +28,11 @@ protected:
 public:
     void check() override;
 
-	inline std::vector<ExprType> getTypes() const { return m_types; }
-	inline std::vector<std::string> getNames() const { return m_names; }
-	inline size_t getSize() const { return m_types.size(); }
+	[[nodiscard]] inline std::vector<ExprType> getTypes() const { return m_types; }
+	[[nodiscard]] inline ExprType getType(int i) const { return m_types[i]; }
+	[[nodiscard]] inline std::vector<std::string> getNames() const { return m_names; }
+	[[nodiscard]] inline std::string getName(int i) const { return m_names[i]; }
+	[[nodiscard]] inline size_t getSize() const { return m_types.size(); }
    
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ParameterList; }
 };

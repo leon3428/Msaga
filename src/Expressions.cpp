@@ -1,18 +1,18 @@
 #include "Expressions.hpp"
 #include "Leafs.hpp"
-#include "Common.hpp"
 #include "OtherNodes.hpp"
 #include <string>
 
 void PrimaryExpression::check() {
     if(checkChildren<NodeType::LeafIdn>()) {
         LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
-        auto p = Msaga::getIdentifier(l -> getLexicalUnit());
-        if(p == nullptr)
+
+        const Identifier *idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
+        if(idn == nullptr)
             m_errorHandler();
 
-        m_exprType = p -> exprType;
-        m_isLValue = p -> LValue;
+        m_exprType = idn -> exprType;
+        m_isLValue = idn -> exprType == ExprType::Int || idn -> exprType == ExprType::Char; // check
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
         if(std::stoi(l -> getLexicalUnit()) < -(1<<32) || std::stoi(l -> getLexicalUnit()) >= (1<<31))
