@@ -84,3 +84,26 @@ bool Msaga::isValidCharArray(const std::string &s) {
     }
     return true;
 }
+
+std::string Msaga::exprTypeToString(ExprType t) {
+    if(t == ExprType::Int)
+        return "Int";
+    if(t == ExprType::Char)
+        return "Char";
+    if(t == ExprType::ConstChar)
+        return "ConstChar";
+    if(t == ExprType::ConstInt)
+        return "ConstInt";
+    if(t == ExprType::ArrayChar)
+        return "ArrayChar";
+    if(t == ExprType::ArrayInt)
+        return "ArrayInt";
+    if(t == ExprType::ArrayConstChar)
+        return "ArrayConstChar";
+    if(t == ExprType::ArrayConstInt)
+        return "ArrayConstInt";
+    if(t == ExprType::Function)
+        return "Function";
+    
+    return "Error";
+}

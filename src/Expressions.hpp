@@ -12,7 +12,7 @@
 class GenericExpression : public SyntaxTreeNode {
 protected:
     ExprType m_exprType;
-    bool m_isLValue = false;
+    bool m_isLValue;
 
 public:
     [[nodiscard]] inline ExprType getExprType() const { return m_exprType; }
@@ -54,8 +54,10 @@ protected:
 public:
     void check() override;
 
-    [[nodiscard]] inline int getCharacterArrayLength() const { return m_characterArrayLength; }
+    [[nodiscard]] inline bool isCharacterArray() const { return m_characterArrayLength >= 0; }
+    [[nodiscard]] inline size_t getCharacterArrayLength() const { return m_characterArrayLength; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::AssignmentExpression; }
+    inline void setCharacterArrayLength(int length) { m_characterArrayLength = length; }
 };
 
 /**

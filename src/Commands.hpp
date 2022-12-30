@@ -3,7 +3,6 @@
 
 #include "SyntaxTree.hpp"
 #include <iostream>
-#include <forward_list>
 
 /**
  * @brief All other command classes should be based on this class
@@ -88,17 +87,17 @@ public:
  */
 class JumpCommand : public GenericCommand {
 private:
-	Msaga::FunctionType *m_functionType = nullptr;
-	SyntaxTreeNode *m_insideLoop = nullptr;
+	ExprType m_functionReturnType = ExprType::Error; 
+	bool m_insideLoop = false;
 
 public:
 	JumpCommand() = default;
-	inline void setFunctionType(Msaga::FunctionType *functionType) { m_functionType = functionType; }
-	inline void setInsideLoop(SyntaxTreeNode* insideLoop) { m_insideLoop = insideLoop; }
-	[[nodiscard]] inline bool isInsideLoop() const { return m_insideLoop != nullptr; }
+	inline void setFunctionReturnType(ExprType functionReturnType) { m_functionReturnType = functionReturnType; }
+	inline void setInsideLoop(bool insideLoop) { m_insideLoop = insideLoop; }
+	[[nodiscard]] inline bool isInsideLoop() const { return m_insideLoop; }
     void check() override;
 
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
+    [[nodiscard]] inline ExprType getFunctionReturnType() const { return m_functionReturnType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::JumpCommand; }
 };
 

@@ -1,10 +1,13 @@
 #include <iostream>
-#include "Expressions.hpp"
-#include "Leafs.hpp"
+#include <fstream>
+#include "SyntaxTree.hpp"
 
 int main() {
-    
-    std::cout << "Hello World" << std::endl;
+    std::ifstream inputStream("test/examples/01_idn/test.in");
 
+    SyntaxTree st;
+    st.load(inputStream);
+    st.print();
+    st.check();
     return 0;
 }

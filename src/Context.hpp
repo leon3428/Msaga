@@ -35,15 +35,4 @@ public:
     }
 };
 
-
-class ContextHolder {
-private:
-    std::vector<std::unique_ptr<ContextNode> > m_contextNodes;
-public:
-    inline const ContextNode* constructContextNode(ContextNode *parent = nullptr) {
-        m_contextNodes.emplace_back(parent);
-        return m_contextNodes.back().get();
-    }
-};
-
 #endif //CONTEXT_H

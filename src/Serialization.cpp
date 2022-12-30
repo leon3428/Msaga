@@ -1,4 +1,9 @@
 #include "Serialization.hpp"
+#include "Leafs.hpp"
+#include "Expressions.hpp"
+#include "OtherNodes.hpp"
+#include "Commands.hpp"
+#include "Declarations.hpp"
 
 std::string Msaga::NodeTypeToString(NodeType nt) {
 	if(nt == NodeType::PrimaryExpression)
@@ -168,172 +173,176 @@ std::string Msaga::NodeTypeToString(NodeType nt) {
 	return "error";
 }
 
-NodeType Msaga::StringToNodeType(const std::string &s) {
+SyntaxTreeNode* Msaga::constructInnerNode(const std::string &s, SyntaxTreeNode *parent){
 	if(s == "<prijevodna_jedinica>")
-		return NodeType::TranslationUnit;
+		return parent -> addChild<TranslationUnit>();
 	if(s == "<primarni_izraz>")
-		return NodeType::PrimaryExpression;
+		return parent -> addChild<PrimaryExpression>();
 	if(s == "<postfiks_izraz>")
-		return NodeType::PostfixExpression;
+		return parent -> addChild<PostfixExpression>();
 	if(s == "<lista_argumenata>")
-		return NodeType::ArgumentList;
+		return parent -> addChild<ArgumentList>();
 	if(s == "<unarni_izraz>")
-		return NodeType::UnaryExpression;
+		return parent -> addChild<UnaryExpression>();
 	if(s == "<unarni_operator>")
-		return NodeType::UnaryOperator;
+		return parent -> addChild<UnaryOperator>();
 	if(s == "<cast_izraz>")
-		return NodeType::CastExpression;
+		return parent -> addChild<CastExpression>();
 	if(s == "<ime_tipa>")
-		return NodeType::TypeName;
+		return parent -> addChild<TypeName>();
 	if(s == "<specifikator_tipa>")
-		return NodeType::TypeSpecifier;
+		return parent -> addChild<TypeSpecifier>();
 	if(s == "<multiplikativni_izraz>")
-		return NodeType::MultiplicativeExpression;
+		return parent -> addChild<MultiplicativeExpression>();
 	if(s == "<aditivni_izraz>")
-		return NodeType::AdditiveExpression;
+		return parent -> addChild<AdditiveExpression>();
 	if(s == "<odnosni_izraz>")
-		return NodeType::ComparisonExpression;
+		return parent -> addChild<ComparisonExpression>();
 	if(s == "<jednakosni_izraz>")
-		return NodeType::EqualsExpression;
+		return parent -> addChild<EqualsExpression>();
 	if(s == "<bin_i_izraz>")
-		return NodeType::BitwiseAndExpression;
+		return parent -> addChild<BitwiseAndExpression>();
 	if(s == "<bin_xili_izraz>")
-		return NodeType::BitwiseXorExpression;
+		return parent -> addChild<BitwiseXorExpression>();
 	if(s == "<bin_ili_izraz>")
-		return NodeType::BitwiseOrExpression;
+		return parent -> addChild<BitwiseOrExpression>();
 	if(s == "<log_i_izraz>")
-		return NodeType::LogicalAndExpression;
+		return parent -> addChild<LogicalAndExpression>();
 	if(s == "<log_ili_izraz>")
-		return NodeType::LogicalOrExpression;
+		return parent -> addChild<LogicalOrExpression>();
 	if(s == "<izraz_pridruzivanja>")
-		return NodeType::AssignmentExpression;
+		return parent -> addChild<AssignmentExpression>();
 	if(s == "<izraz>")
-		return NodeType::Expression;
+		return parent -> addChild<Expression>();
 	if(s == "<slozena_naredba>")
-		return NodeType::ComplexCommand;
+		return parent -> addChild<ComplexCommand>();
 	if(s == "<lista_naredbi>")
-		return NodeType::ListCommand;
+		return parent -> addChild<ListCommand>();
 	if(s == "<naredba>")
-		return NodeType::Command;
+		return parent -> addChild<Command>();
 	if(s == "<izraz_naredba>")
-		return NodeType::ExpressionCommand;
+		return parent -> addChild<ExpressionCommand>();
 	if(s == "<naredba_grananja>")
-		return NodeType::BranchCommand;
+		return parent -> addChild<BranchCommand>();
 	if(s == "<naredba_petlje>")
-		return NodeType::LoopCommand;
+		return parent -> addChild<LoopCommand>();
 	if(s == "<naredba_skoka>")
-		return NodeType::JumpCommand;
+		return parent -> addChild<JumpCommand>();
 	if(s == "<vanjska_deklaracija>")
-		return NodeType::ExternalDeclaration;
+		return parent -> addChild<ExternalDeclaration>();
 	if(s == "<definicija_funkcije>")
-		return NodeType::FunctionDefinition;
+		return parent -> addChild<FunctionDefinition>();
 	if(s == "<lista_parametara>")
-		return NodeType::ParameterList;
+		return parent -> addChild<ParameterList>();
 	if(s == "<deklaracija_parametra>")
-		return NodeType::ParameterDeclaration;
+		return parent -> addChild<ParameterDeclaration>();
 	if(s == "<lista_deklaracija>")
-		return NodeType::DeclarationList;
+		return parent -> addChild<DeclarationList>();
 	if(s == "<deklaracija>")
-		return NodeType::Declaration;
+		return parent -> addChild<Declaration>();
 	if(s == "<lista_init_deklaratora>")
-		return NodeType::DeclaratorInitList;
+		return parent -> addChild<DeclaratorInitList>();
 	if(s == "<init_deklarator>")
-		return NodeType::InitDeclarator;
+		return parent -> addChild<InitDeclarator>();
 	if(s == "<izravni_deklarator>")
-		return NodeType::DirectDeclarator;
+		return parent -> addChild<DirectDeclarator>();
 	if(s == "<inicijalizator>")
-		return NodeType::Initializer;
+		return parent -> addChild<Initializer>();
 	if(s == "<lista_izraza_pridruzivanja>")
-		return NodeType::JoinExpressionList;
+		return parent -> addChild<JoinExpressionList>();
+	return nullptr;
+}
+
+SyntaxTreeNode* Msaga::constructLeafNode(const std::string &s, int row, const std::string &lexicalUnit, SyntaxTreeNode *parent){
 	if(s == "IDN")
-		return NodeType::LeafIdn;
+		return parent -> addChild<LeafIdn>(row, lexicalUnit);
 	if(s == "BROJ")
-		return NodeType::LeafNum;
+		return parent -> addChild<LeafNum>(row, lexicalUnit);
 	if(s == "ZNAK")
-		return NodeType::LeafCharacter;
+		return parent -> addChild<LeafCharacter>(row, lexicalUnit);
 	if(s == "NIZ_ZNAKOVA")
-		return NodeType::LeafCharArray;
+		return parent -> addChild<LeafCharArray>(row, lexicalUnit);
 	if(s == "KR_BREAK")
-		return NodeType::LeafKwBreak;
+		return parent -> addChild<LeafKwBreak>(row, lexicalUnit);
 	if(s == "KR_CHAR")
-		return NodeType::LeafKwChar;
+		return parent -> addChild<LeafKwChar>(row, lexicalUnit);
 	if(s == "KR_CONST")
-		return NodeType::LeafKwConst;
+		return parent -> addChild<LeafKwConst>(row, lexicalUnit);
 	if(s == "KR_CONTINUE")
-		return NodeType::LeafKwContinue;
+		return parent -> addChild<LeafKwContinue>(row, lexicalUnit);
 	if(s == "KR_ELSE")
-		return NodeType::LeafKwElse;
+		return parent -> addChild<LeafKwElse>(row, lexicalUnit);
 	if(s == "KR_FOR")
-		return NodeType::LeafKwFor;
+		return parent -> addChild<LeafKwFor>(row, lexicalUnit);
 	if(s == "KR_IF")
-		return NodeType::LeafKwIf;
+		return parent -> addChild<LeafKwIf>(row, lexicalUnit);
 	if(s == "KR_INT")
-		return NodeType::LeafKwInt;
+		return parent -> addChild<LeafKwInt>(row, lexicalUnit);
 	if(s == "KR_RETURN")
-		return NodeType::LeafKwReturn;
+		return parent -> addChild<LeafKwReturn>(row, lexicalUnit);
 	if(s == "KR_VOID")
-		return NodeType::LeafKwVoid;
+		return parent -> addChild<LeafKwVoid>(row, lexicalUnit);
 	if(s == "KR_WHILE")
-		return NodeType::LeafKwWhile;
+		return parent -> addChild<LeafKwWhile>(row, lexicalUnit);
 	if(s == "PLUS")
-		return NodeType::LeafPlus;
+		return parent -> addChild<LeafPlus>(row, lexicalUnit);
 	if(s == "OP_INC")
-		return NodeType::LeafInc;
+		return parent -> addChild<LeafInc>(row, lexicalUnit);
 	if(s == "MINUS")
-		return NodeType::LeafMinus;
+		return parent -> addChild<LeafMinus>(row, lexicalUnit);
 	if(s == "OP_DEC")
-		return NodeType::LeafDec;
+		return parent -> addChild<LeafDec>(row, lexicalUnit);
 	if(s == "OP_PUTA")
-		return NodeType::LeafMult;
+		return parent -> addChild<LeafMult>(row, lexicalUnit);
 	if(s == "OP_DIJELI")
-		return NodeType::LeafDiv;
+		return parent -> addChild<LeafDiv>(row, lexicalUnit);
 	if(s == "OP_MOD")
-		return NodeType::LeafMod;
+		return parent -> addChild<LeafMod>(row, lexicalUnit);
 	if(s == "OP_PRIDRUZI")
-		return NodeType::LeafAssignment;
+		return parent -> addChild<LeafAssignment>(row, lexicalUnit);
 	if(s == "OP_LT")
-		return NodeType::LeafLt;
+		return parent -> addChild<LeafLt>(row, lexicalUnit);
 	if(s == "OP_LTE")
-		return NodeType::LeafLte;
+		return parent -> addChild<LeafLte>(row, lexicalUnit);
 	if(s == "OP_GT")
-		return NodeType::LeafGt;
+		return parent -> addChild<LeafGt>(row, lexicalUnit);
 	if(s == "OP_GTE")
-		return NodeType::LeafGte;
+		return parent -> addChild<LeafGte>(row, lexicalUnit);
 	if(s == "OP_EQ")
-		return NodeType::LeafEq;
+		return parent -> addChild<LeafEq>(row, lexicalUnit);
 	if(s == "OP_NEQ")
-		return NodeType::LeafNeq;
+		return parent -> addChild<LeafNeq>(row, lexicalUnit);
 	if(s == "OP_NEG")
-		return NodeType::LeafNeg;
+		return parent -> addChild<LeafNeg>(row, lexicalUnit);
 	if(s == "OP_TILDA")
-		return NodeType::LeafTilde;
+		return parent -> addChild<LeafTilde>(row, lexicalUnit);
 	if(s == "OP_I")
-		return NodeType::LeafLogAnd;
+		return parent -> addChild<LeafLogAnd>(row, lexicalUnit);
 	if(s == "OP_ILI")
-		return NodeType::LeafLogOr;
+		return parent -> addChild<LeafLogOr>(row, lexicalUnit);
 	if(s == "OP_BIN_I")
-		return NodeType::LeafBitAnd;
+		return parent -> addChild<LeafBitAnd>(row, lexicalUnit);
 	if(s == "OP_BIN_ILI")
-		return NodeType::LeafBitOr;
+		return parent -> addChild<LeafBitOr>(row, lexicalUnit);
 	if(s == "OP_BIN_XILI")
-		return NodeType::LeafBitXor;
+		return parent -> addChild<LeafBitXor>(row, lexicalUnit);
 	if(s == "ZAREZ")
-		return NodeType::LeafComma;
+		return parent -> addChild<LeafComma>(row, lexicalUnit);
 	if(s == "TOCKAZAREZ")
-		return NodeType::LeafSemicolon;
+		return parent -> addChild<LeafSemicolon>(row, lexicalUnit);
 	if(s == "L_ZAGRADA")
-		return NodeType::LeafLeftBracket;
+		return parent -> addChild<LeafLeftBracket>(row, lexicalUnit);
 	if(s == "D_ZAGRADA")
-		return NodeType::LeafRightBracket;
+		return parent -> addChild<LeafRightBracket>(row, lexicalUnit);
 	if(s == "L_UGL_ZAGRADA")
-		return NodeType::LeafLeftSquareBracket;
+		return parent -> addChild<LeafLeftSquareBracket>(row, lexicalUnit);
 	if(s == "D_UGL_ZAGRADA")
-		return NodeType::LeafRightSquareBracket;
+		return parent -> addChild<LeafRightSquareBracket>(row, lexicalUnit);
 	if(s == "L_VIT_ZAGRADA")
-		return NodeType::LeafLeftCurlyBracket;
+		return parent -> addChild<LeafLeftCurlyBracket>(row, lexicalUnit);
 	if(s == "D_VIT_ZAGRADA")
-		return NodeType::LeafRightCurlyBracket;
-	return NodeType::Error;
+		return parent -> addChild<LeafRightCurlyBracket>(row, lexicalUnit);
+	return nullptr;
 }
 
 bool Msaga::isLeaf(NodeType nt) {

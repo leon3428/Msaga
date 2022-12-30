@@ -37,13 +37,39 @@ public:
     virtual inline NodeType getNodeType() const = 0;
 
     template<typename T, typename... Args>
-    const SyntaxTreeNode* addChild(Args&&... args) {
+    SyntaxTreeNode* addChild(Args&&... args) {
         m_children.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
 
         return m_children.back().get();
     }
 
+    [[nodiscard]] inline size_t getChildrenCnt() const { return m_children.size(); }
+    [[nodiscard]] inline SyntaxTreeNode* getChild(size_t i) { return m_children[i].get(); }
     [[nodiscard]] inline ContextNode* getLocalContextNode() { return m_localContext; }
+    inline void setLocalContextNode(ContextNode *contextNode) { m_localContext = contextNode; }
+};
+
+struct StackItem {
+    SyntaxTreeNode *node;
+    int indentLevel;
+    bool insideLoop;
+    ExprType functionReturnType;
+    int characterArrayLength;
+
+    StackItem(SyntaxTreeNode *n, int indLevel, bool inLoop, ExprType funRetType, int charArrayLen);
+};
+
+class SyntaxTree {
+private:
+    std::vector<std::unique_ptr<ContextNode> > m_contextNodes;
+    std::unique_ptr<SyntaxTreeNode> m_root;
+
+    void m_printHelper(SyntaxTreeNode *node, int indent_level);
+
+public:
+    void load(std::istream &stream);
+    inline void print() { m_printHelper(m_root.get(), 0); }
+    inline void check() { m_root -> check(); }
 };
 
 #endif //SYNTAX_TREE_H

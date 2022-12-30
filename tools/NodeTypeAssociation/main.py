@@ -41,12 +41,30 @@ def writecpp(characters, nodeTypes):
         f_dst.write('}')
         f_dst.write('\n\n')
 
-        f_dst.write('NodeType Msaga::StringToNodeType(const std::string &s) {\n')
-        for ch in characters:
-            f_dst.write('\tif(s == "' + ch + '")\n')
-            f_dst.write('\t\treturn NodeType::' + index[ch] + ';\n')
+        # f_dst.write('NodeType Msaga::StringToNodeType(const std::string &s) {\n')
+        # for ch in characters:
+        #     f_dst.write('\tif(s == "' + ch + '")\n')
+        #     f_dst.write('\t\treturn NodeType::' + index[ch] + ';\n')
 
-        f_dst.write('\treturn NodeType::Error;\n')
+        # f_dst.write('\treturn NodeType::Error;\n')
+        # f_dst.write('}')
+
+        f_dst.write('SyntaxTreeNode* Msaga::constructInnerNode(const std::string &s, SyntaxTreeNode *parent){\n')
+        for ch in characters:
+            if ch[0] == "<":
+                f_dst.write('\tif(s == "' + ch + '")\n')
+                f_dst.write('\t\treturn parent -> addChild<' + index[ch] + '>();\n')
+        f_dst.write('\treturn nullptr;\n')
+        f_dst.write('}')
+
+        f_dst.write('\n\n')
+
+        f_dst.write('SyntaxTreeNode* Msaga::constructLeafNode(const std::string &s, int row, const std::string &lexicalUnit, SyntaxTreeNode *parent){\n')
+        for ch in characters:
+            if ch[0] != "<":
+                f_dst.write('\tif(s == "' + ch + '")\n')
+                f_dst.write('\t\treturn parent -> addChild<' + index[ch] + '>(row, lexicalUnit);\n')
+        f_dst.write('\treturn nullptr;\n')
         f_dst.write('}')
 
         f_dst.write('\n\n')

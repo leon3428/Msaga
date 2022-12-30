@@ -309,4 +309,25 @@ public:
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafRightCurlyBracket; }
 };
+
+class LeafComma: public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafComma; }
+};
+
+class LeafTilde : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafTilde; }
+};
+
+class LeafNeg : public GenericLeaf {
+public:
+    using GenericLeaf::GenericLeaf;
+
+    [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LeafNeg; }
+};
 #endif // LEAFS_H

@@ -63,7 +63,7 @@ void FunctionDefinition::check() {
 			idn -> defined = true;
 		} else {
 			m_localContext -> declareFunction(lIdn -> getLexicalUnit(), true, {pl -> getTypes(), tn -> getExprType()});
-			for(int i = 0;i < pl -> getSize();i++) {
+			for(size_t i = 0;i < pl -> getSize();i++) {
 				m_localContext -> declareVariable(pl -> getName(i), pl -> getType(i));
 			}
 		}
@@ -265,7 +265,7 @@ void Initializer::check() {
 		AssignmentExpression *expr = static_cast<AssignmentExpression *>(m_children[0].get());
 		expr -> check();
 		
-		if(expr -> getCharacterArrayLength() > 0) {
+		if(expr -> isCharacterArray()) {
 			m_types = {expr -> getCharacterArrayLength(), ExprType::Char };
 		} else {
 			m_types = {expr -> getExprType() };

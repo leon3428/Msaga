@@ -108,16 +108,16 @@ void JumpCommand::check() {
 	if(checkChildren<NodeType::LeafKwContinue, NodeType::LeafSemicolon>() ||
 		checkChildren<NodeType::LeafKwBreak, NodeType::LeafSemicolon>()) 
 	{
-		if(m_insideLoop == nullptr)
+		if(!m_insideLoop)
 			m_errorHandler();
 	} else if(checkChildren<NodeType::LeafKwReturn, NodeType::LeafSemicolon>()) {
-		if(m_functionType == nullptr || m_functionType -> returnType != ExprType::Void)
+		if(m_functionReturnType != ExprType::Void)
 			m_errorHandler();
 	} else if(checkChildren<NodeType::LeafKwReturn, NodeType::Expression, NodeType::LeafSemicolon>()) {
 		Expression *exp = static_cast<Expression *>(m_children[1].get());
 		exp -> check();
 
-		if(m_functionType == nullptr || !Msaga::implicitlyConvertible(exp -> getExprType(), m_functionType -> returnType))
+		if(!Msaga::implicitlyConvertible(exp -> getExprType(), m_functionReturnType))
 			m_errorHandler();
 	} else {
 		m_errorHandler();

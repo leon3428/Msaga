@@ -42,7 +42,7 @@ enum class ExprType : int8_t {
     Void, Int, Char,
     ConstInt, ConstChar,
     ArrayInt, ArrayChar, ArrayConstInt, ArrayConstChar,
-    Function,
+    Function, Error,
 };
 
 
@@ -89,6 +89,8 @@ namespace Msaga {
 	}
     bool isValidChar(const std::string &s);
     bool isValidCharArray(const std::string &s);
+
+    std::string exprTypeToString(ExprType t);
 }
 
 #endif // GLOBAL_H

@@ -7,6 +7,8 @@ add_executable(${PROJECT_NAME}
     OtherNodes.cpp
     Context.cpp
     Serialization.cpp
+    Commands.cpp
+    Declarations.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
