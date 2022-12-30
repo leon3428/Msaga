@@ -29,13 +29,13 @@ enum class NodeType : uint8_t {
     LeafRightSquareBracket, LeafLeftSquareBracket,
 	LeafLeftCurlyBracket, LeafRightCurlyBracket,
     LeafPlus, LeafMinus, LeafMult, LeafDiv, LeafMod,
-    LeafInc, LeafDec, LeafSemicolon,
+    LeafInc, LeafDec, LeafSemicolon, LeafTilde, LeafNeg,
 
 	LeafKwIf, LeafKwElse, LeafKwWhile, LeafKwFor,
     LeafKwConst, LeafKwInt, LeafKwChar, LeafKwVoid,
 	LeafKwContinue, LeafKwBreak, LeafKwReturn,
 
-    TypeName, TypeSpecifier, UnaryOperator, ArgumentList
+    TypeName, TypeSpecifier, UnaryOperator, ArgumentList, Error
 };
 
 enum class ExprType : int8_t {

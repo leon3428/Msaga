@@ -8,10 +8,11 @@
 #include <vector>
 
 struct Identifier {
-    ExprType exprType;
-    bool defined;
-    const Msaga::FunctionType *functionType;
+    ExprType exprType = ExprType::Void;
+    bool defined = false;
+    const Msaga::FunctionType *functionType = nullptr;
 
+    Identifier() = default;
     Identifier(ExprType type, bool isDefined, const Msaga::FunctionType *ft);
 };
 

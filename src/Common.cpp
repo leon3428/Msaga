@@ -58,6 +58,8 @@ ExprType Msaga::baseTypeToArray(ExprType a) {
 
     if(a == ExprType::ConstInt)
         return ExprType::ArrayConstInt;
+
+    return ExprType::Void;
 }
 
 Msaga::FunctionType::FunctionType(const std::vector<ExprType> &argsTypes, ExprType retType) 
@@ -71,8 +73,8 @@ bool Msaga::isValidChar(const std::string &s) {
     return false;
 }
 
-bool isValidCharArray(const std::string &s) {
-    for(int i = 0;i < s.size(); i++) {
+bool Msaga::isValidCharArray(const std::string &s) {
+    for(size_t i = 0;i < s.size(); i++) {
         if(s[i] == '\\') {
             if(i + 1 >= s.size() - 1)
                 return false;

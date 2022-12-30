@@ -15,7 +15,7 @@ void PrimaryExpression::check() {
         m_isLValue = idn -> exprType == ExprType::Int || idn -> exprType == ExprType::Char; // check
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
-        if(std::stoi(l -> getLexicalUnit()) < -(1<<32) || std::stoi(l -> getLexicalUnit()) >= (1<<31))
+        if(std::stol(l -> getLexicalUnit()) < INT32_MIN|| std::stol(l -> getLexicalUnit()) >= INT32_MAX)
             m_errorHandler();
 
         m_exprType = ExprType::Int;
@@ -418,7 +418,7 @@ void PostfixExpression::check() {
         Msaga::FunctionType *ft = pExpr -> getFunctionType();
         if(pExpr -> getExprType() == ExprType::Function && ft != nullptr && ft -> argumentsTypes.size() == al -> getSize()) {
             bool compatible = true;
-            for(int i = 0;i < al -> getSize(); i++)
+            for(size_t i = 0;i < al -> getSize(); i++)
                 compatible = compatible && Msaga::implicitlyConvertible(al -> getType(i), ft -> argumentsTypes[i]);
 
             if(!compatible)
