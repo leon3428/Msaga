@@ -27,9 +27,12 @@ public:
  * 
  */
 class PrimaryExpression : public GenericExpression {
+protected:
+    const Msaga::FunctionType *m_functionType;
 public:
     void check() override;
 
+    [[nodiscard]] inline const Msaga::FunctionType* getFunctionType() { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PrimaryExpression; }
 };
 
@@ -89,13 +92,13 @@ public:
  */
 class PostfixExpression : public GenericExpression {
 private:
-	Msaga::FunctionType *m_functionType = nullptr;
+	const Msaga::FunctionType *m_functionType = nullptr;
 
 public:
 	PostfixExpression() = default;
 	void check() override;
 
-	[[nodiscard]] inline Msaga::FunctionType* getFunctionType() const { return m_functionType; }
+	[[nodiscard]] inline const Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PostfixExpression; }
 };
 

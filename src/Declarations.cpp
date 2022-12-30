@@ -13,7 +13,7 @@ void FunctionDefinition::check() {
 	{
 		TypeName *tn = static_cast<TypeName*>(m_children[0].get());
 		tn -> check();
-		if(!Msaga::notConstT(tn -> getExprType()))
+		if(Msaga::isConst(tn -> getExprType()))
 			m_errorHandler();
 
 		LeafIdn *lIdn = static_cast<LeafIdn*>(m_children[1].get());
@@ -41,7 +41,7 @@ void FunctionDefinition::check() {
 	{
 		TypeName *tn = static_cast<TypeName*>(m_children[0].get());
 		tn -> check();
-		if(!Msaga::notConstT(tn -> getExprType()))
+		if(Msaga::isConst(tn -> getExprType()))
 			m_errorHandler();
 
 		LeafIdn *lIdn = static_cast<LeafIdn*>(m_children[1].get());
@@ -172,7 +172,7 @@ void InitDeclarator::check() {
 		DirectDeclarator *decl = static_cast<DirectDeclarator *>(m_children[0].get());
 		decl -> setNtype(m_ntype);
 		decl -> check();
-		if(!Msaga::notConstT(decl -> getExprType()) || Msaga::isConstArray(decl -> getExprType()))
+		if(Msaga::isConst(decl -> getExprType()) || Msaga::isConstArray(decl -> getExprType()))
 			m_errorHandler();
 
 	} else if(checkChildren<NodeType::DirectDeclarator, NodeType::LeafAssignment, NodeType::Initializer>()) {
@@ -184,7 +184,7 @@ void InitDeclarator::check() {
 		init -> check();
 
 		if(Msaga::isConst(decl -> getExprType()) || Msaga::isNumber(decl -> getExprType())) {
-			if(!Msaga::implicitlyConvertibleToT(init -> getType(0)))
+			if(!Msaga::implicitlyConvertible(init -> getType(0), decl -> getExprType()))
 				m_errorHandler();
 		} else if(Msaga::isArrayType(decl -> getExprType())) {
 			if(init -> getElementCount() > decl -> getElementCnt())

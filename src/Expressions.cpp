@@ -11,6 +11,8 @@ void PrimaryExpression::check() {
         if(idn == nullptr)
             m_errorHandler();
 
+        if(idn -> exprType == ExprType::Function)
+            m_functionType = idn -> functionType;
         m_exprType = idn -> exprType;
         m_isLValue = idn -> exprType == ExprType::Int || idn -> exprType == ExprType::Char; // check
     } else if(checkChildren<NodeType::LeafNum>()) {
@@ -337,7 +339,7 @@ void CastExpression::check(){
 
         tn -> check();
         castExpr -> check();
-        if(!(Msaga::implicitlyConvertible(castExpr -> getExprType(), tn -> getExprType()) || (tn -> getExprType() == ExprType::Char && castExpr -> getExprType() == ExprType::Int)))
+        if(!(Msaga::explicitlyConvertible(castExpr -> getExprType(), tn -> getExprType())))
             m_errorHandler();
 
         m_exprType = tn -> getExprType();
@@ -383,6 +385,7 @@ void PostfixExpression::check() {
         PrimaryExpression *pExpr = static_cast<PrimaryExpression*>(m_children[0].get());
 
         pExpr -> check();
+        m_functionType = pExpr -> getFunctionType();
         m_exprType = pExpr -> getExprType();
         m_isLValue = pExpr -> isLValue();
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftSquareBracket, NodeType::Expression, NodeType::LeafRightSquareBracket>()) {
@@ -402,7 +405,7 @@ void PostfixExpression::check() {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
 
         pExpr -> check();
-        Msaga::FunctionType *ft = pExpr -> getFunctionType();
+        const Msaga::FunctionType *ft = pExpr -> getFunctionType();
         if(!(pExpr -> getExprType() == ExprType::Function && ft != nullptr && ft -> argumentsTypes.size() == 1 && ft -> argumentsTypes[0] == ExprType::Void))
             m_errorHandler();
 
@@ -415,7 +418,7 @@ void PostfixExpression::check() {
         pExpr -> check();
         al -> check();
 
-        Msaga::FunctionType *ft = pExpr -> getFunctionType();
+        const Msaga::FunctionType *ft = pExpr -> getFunctionType();
         if(pExpr -> getExprType() == ExprType::Function && ft != nullptr && ft -> argumentsTypes.size() == al -> getSize()) {
             bool compatible = true;
             for(size_t i = 0;i < al -> getSize(); i++)

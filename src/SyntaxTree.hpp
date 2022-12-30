@@ -69,7 +69,7 @@ private:
 public:
     void load(std::istream &stream);
     inline void print() { m_printHelper(m_root.get(), 0); }
-    inline void check() { m_root -> check(); }
+    void check();
 };
 
 #endif //SYNTAX_TREE_H

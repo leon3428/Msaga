@@ -20,6 +20,7 @@ class ContextNode {
 private:
     ContextNode *m_parent = nullptr;
     std::map<std::string, Identifier> m_identifierTable;
+    std::vector<std::unique_ptr<Msaga::FunctionType> > m_functionTypes;
 public:
     ContextNode() = default;
     ContextNode(ContextNode *parent);
@@ -31,8 +32,11 @@ public:
         m_identifierTable[name] = {exprType, true, nullptr};
     }
     inline void declareFunction(const std::string &name, bool isDefined, const Msaga::FunctionType &functionType) {
-        m_identifierTable[name] = {ExprType::Function, isDefined, &functionType};
+        m_functionTypes.push_back(std::make_unique<Msaga::FunctionType>(functionType));
+        m_identifierTable[name] = {ExprType::Function, isDefined, m_functionTypes.back().get()};
     }
+
+    [[nodiscard]] bool allDefined(ContextNode *globalContext);
 };
 
 #endif //CONTEXT_H

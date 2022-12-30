@@ -7,7 +7,7 @@ void TypeName::check() {
         ts -> check();
         m_exprType = ts -> getExprType();
     } else if(checkChildren<NodeType::LeafKwConst, NodeType::TypeSpecifier>()) {
-        TypeSpecifier *ts = static_cast<TypeSpecifier*>(m_children[0].get());
+        TypeSpecifier *ts = static_cast<TypeSpecifier*>(m_children[1].get());
         
         ts -> check();
         if(ts -> getExprType() == ExprType::Int)

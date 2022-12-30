@@ -30,6 +30,21 @@ bool Msaga::implicitlyConvertible(ExprType a, ExprType b) {
     return false;
 }
 
+bool Msaga::explicitlyConvertible(ExprType a, ExprType b) {
+    if(implicitlyConvertible(a,b))
+        return true;
+    if(a == ExprType::Int && b == ExprType::Char)
+        return true;
+    if(a == ExprType::ConstInt && b == ExprType::Char)
+        return true;
+    if(a == ExprType::Int && b == ExprType::ConstChar)
+        return true;
+    if(a == ExprType::ConstInt && b == ExprType::ConstChar)
+        return true;
+
+    return false;
+}
+
 ExprType Msaga::arrayBaseType(ExprType a) {
     if(a == ExprType::ArrayChar)
         return ExprType::Char;
@@ -66,20 +81,21 @@ Msaga::FunctionType::FunctionType(const std::vector<ExprType> &argsTypes, ExprTy
     : argumentsTypes(argsTypes), returnType(retType) {}
 
 bool Msaga::isValidChar(const std::string &s) {
-    if(s.size() == 1)
+    if(s.size() == 3)
         return true;
-    if(s.size() == 2 && (s == "\\t" || s == "\\n" || s == "\\0" || s == "\\'" || s == "\\\"" || s == "\\\\"))
+    if(s.size() == 4 && (s == "'\\t'" || s == "'\\n'" || s == "'\\0'" || s == "'\\''" || s == "'\\\"'" || s == "'\\\\'"))
         return true;
     return false;
 }
 
 bool Msaga::isValidCharArray(const std::string &s) {
-    for(size_t i = 0;i < s.size(); i++) {
+    for(size_t i = 1;i < s.size() - 1; i++) {
         if(s[i] == '\\') {
             if(i + 1 >= s.size() - 1)
                 return false;
-            if(s[i+1] != 't' || s[i+1] != 'n' || s[i+1] != '0' || s[i+1] != '\'' || s[i+1] != '\"' || s[i+1] != '\\')
+            if(s[i+1] != 't' && s[i+1] != 'n' && s[i+1] != '0' && s[i+1] != '\'' && s[i+1] != '\"' && s[i+1] != '\\')
                 return false;
+            i++;
         }
     }
     return true;

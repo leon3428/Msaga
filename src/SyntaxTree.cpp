@@ -120,3 +120,24 @@ void SyntaxTree::m_printHelper(SyntaxTreeNode *node, int indent_level) {
     for(size_t i = 0;i < node -> getChildrenCnt(); i++)
         m_printHelper(node -> getChild(i), indent_level + 1);
 }
+
+void SyntaxTree::check() {
+    m_root -> check();
+
+    Identifier *idn = m_contextNodes[0] -> getIdentifier("main");
+    if(idn == nullptr || 
+       idn -> functionType -> argumentsTypes.size() != 1 || 
+       idn -> functionType -> argumentsTypes[0] != ExprType::Void || 
+       idn -> functionType -> returnType != ExprType::Int)
+    {
+        std::cout << "main" << std::endl;
+    }
+
+    bool allDefined = true;
+    ContextNode *globalContext = m_contextNodes[0].get();
+    for(size_t i = 0;i < m_contextNodes.size(); i++) {
+        allDefined = allDefined && m_contextNodes[i] -> allDefined(globalContext);
+    }
+    if(!allDefined)
+        std::cout << "funkcija" << std::endl;
+}

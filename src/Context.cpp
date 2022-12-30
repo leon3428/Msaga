@@ -13,3 +13,19 @@ Identifier* ContextNode::getIdentifier(const std::string &name) {
         return nullptr;
     return m_parent -> getIdentifier(name);
 }
+
+bool ContextNode::allDefined(ContextNode *globalContext) {
+    for(auto const& [name, identifier] : m_identifierTable) {
+        if(identifier.defined || identifier.exprType != ExprType::Function)
+            continue;
+
+        Identifier *global_idn = globalContext -> getIdentifier(name);
+        if(global_idn == nullptr || !(global_idn -> defined))
+            return false;
+        if(global_idn -> functionType -> returnType != identifier.functionType -> returnType)
+            return false;
+        if(global_idn -> functionType -> argumentsTypes != identifier.functionType -> argumentsTypes)
+            return false;
+    }
+    return true;
+}

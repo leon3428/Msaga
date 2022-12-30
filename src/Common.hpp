@@ -64,9 +64,7 @@ namespace Msaga {
     };
 
     bool implicitlyConvertible(ExprType a, ExprType b);
-	inline bool implicitlyConvertibleToT(ExprType a) {
-	    return Msaga::implicitlyConvertible(a, ExprType::Int) || Msaga::implicitlyConvertible(a, ExprType::Char);
-    }
+    bool explicitlyConvertible(ExprType a, ExprType b);
 
     inline bool isArrayType(ExprType a) {
         return a == ExprType::ArrayChar || a == ExprType::ArrayInt || a == ExprType::ArrayConstChar || a == ExprType::ArrayConstInt;
@@ -77,9 +75,6 @@ namespace Msaga {
 
     inline bool isConst(ExprType a) {
         return a == ExprType::ConstChar || a == ExprType::ConstInt;
-    }
-    inline bool notConstT(ExprType a) {
-        return a == ExprType::Char || a == ExprType::Int || a == ExprType::Void;
     }
 	inline bool isConstArray(ExprType a) {
         return a == ExprType::ArrayConstChar || a == ExprType::ArrayConstInt;

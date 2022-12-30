@@ -3,11 +3,11 @@
 #include "SyntaxTree.hpp"
 
 int main() {
-    std::ifstream inputStream("test/examples/01_idn/test.in");
+    //std::ifstream inputStream("test/examples/15_cast1/test.in");
 
     SyntaxTree st;
-    st.load(inputStream);
-    st.print();
+    st.load(std::cin);
+    //st.print();
     st.check();
     return 0;
 }
