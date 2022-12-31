@@ -184,9 +184,11 @@ void InitDeclarator::check() {
 		init -> check();
 
 		if(Msaga::isConst(decl -> getExprType()) || Msaga::isNumber(decl -> getExprType())) {
-			if(!Msaga::implicitlyConvertible(init -> getType(0), decl -> getExprType()))
+			if(init -> getElementCount() != 1 || !Msaga::implicitlyConvertible(init -> getType(0), decl -> getExprType()))
 				m_errorHandler();
 		} else if(Msaga::isArrayType(decl -> getExprType())) {
+			if(!init -> reducesToCharArray())
+				m_errorHandler();
 			if(init -> getElementCount() > decl -> getElementCnt())
 				m_errorHandler();
 			for(int i = 0;i < init -> getElementCount(); i++) {
@@ -262,16 +264,19 @@ void DirectDeclarator::check() {
 
 void Initializer::check() {
 	if(checkChildren<NodeType::AssignmentExpression>()) {
+		m_reducesToCharArray = false;
 		AssignmentExpression *expr = static_cast<AssignmentExpression *>(m_children[0].get());
 		expr -> check();
 		
 		if(expr -> isCharacterArray()) {
 			m_types = {expr -> getCharacterArrayLength(), ExprType::Char };
+			m_reducesToCharArray = true;
 		} else {
 			m_types = {expr -> getExprType() };
 		}
 	} else if(checkChildren<NodeType::LeafLeftCurlyBracket, NodeType::JoinExpressionList, NodeType::LeafRightCurlyBracket>()) {
-		JoinExpressionList *list = static_cast<JoinExpressionList *>(m_children[0].get());
+		m_reducesToCharArray = true;
+		JoinExpressionList *list = static_cast<JoinExpressionList *>(m_children[1].get());
 		list -> check();
 
 		m_types = list -> getTypes();

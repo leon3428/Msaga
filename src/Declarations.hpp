@@ -134,6 +134,8 @@ public:
 class Initializer : public SyntaxTreeNode {
 private:
 	std::vector<ExprType> m_types;
+	bool m_reducesToCharArray;
+
 public:
     void check() override;
     
@@ -141,6 +143,7 @@ public:
 	[[nodiscard]] inline ExprType getType(int i) const { return m_types[i]; }
 	[[nodiscard]] inline int getElementCount() const { return m_types.size(); }
 	[[nodiscard]] inline NodeType getNodeType() const override { return NodeType::Initializer; }
+	[[nodiscard]] inline bool reducesToCharArray() const { return m_reducesToCharArray; }
 };
 
 /**

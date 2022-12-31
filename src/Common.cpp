@@ -19,6 +19,12 @@ bool Msaga::implicitlyConvertible(ExprType a, ExprType b) {
     //char
     if(a == ExprType::Char && b == ExprType::Int)
         return true;
+    if(a == ExprType::Char && b == ExprType::ConstInt)
+        return true;
+    if(a == ExprType::ConstChar && b == ExprType::Int)
+        return true;
+    if(a == ExprType::ConstChar && b == ExprType::ConstInt)
+        return true;
 
     //array
     if(a == ExprType::ArrayInt && b == ExprType::ArrayConstInt)
@@ -35,9 +41,9 @@ bool Msaga::explicitlyConvertible(ExprType a, ExprType b) {
         return true;
     if(a == ExprType::Int && b == ExprType::Char)
         return true;
-    if(a == ExprType::ConstInt && b == ExprType::Char)
-        return true;
     if(a == ExprType::Int && b == ExprType::ConstChar)
+        return true;
+    if(a == ExprType::ConstInt && b == ExprType::Char)
         return true;
     if(a == ExprType::ConstInt && b == ExprType::ConstChar)
         return true;
@@ -81,7 +87,7 @@ Msaga::FunctionType::FunctionType(const std::vector<ExprType> &argsTypes, ExprTy
     : argumentsTypes(argsTypes), returnType(retType) {}
 
 bool Msaga::isValidChar(const std::string &s) {
-    if(s.size() == 3)
+    if(s.size() == 3 && s[1] != '\\')
         return true;
     if(s.size() == 4 && (s == "'\\t'" || s == "'\\n'" || s == "'\\0'" || s == "'\\''" || s == "'\\\"'" || s == "'\\\\'"))
         return true;
