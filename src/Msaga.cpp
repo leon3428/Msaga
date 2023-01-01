@@ -3,7 +3,7 @@
 #include "SyntaxTree.hpp"
 
 int main() {
-    std::ifstream inputStream("test/examples2/28_lista_deklaracija/test.in");
+    std::ifstream inputStream("test/examples2/31_niz/test.in");
 
     SyntaxTree st;
     st.load(std::cin);

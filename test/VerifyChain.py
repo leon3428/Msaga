@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-EXAMPLES_DIR = 'test/examples'
+EXAMPLES_DIR = 'test/examples3'
 
 def main():
     for dir in os.listdir(EXAMPLES_DIR):

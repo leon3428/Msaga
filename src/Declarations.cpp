@@ -269,7 +269,7 @@ void Initializer::check() {
 		expr -> check();
 		
 		if(expr -> isCharacterArray()) {
-			m_types = {expr -> getCharacterArrayLength(), ExprType::Char };
+			m_types = {expr -> getCharacterArrayLength() + 1, ExprType::Char };
 			m_reducesToCharArray = true;
 		} else {
 			m_types = {expr -> getExprType() };
