@@ -32,6 +32,8 @@ protected:
 public:
     void check() override;
 
+	void generateCodePost(std::ostream &stream) const override;
+
     [[nodiscard]] inline const Msaga::FunctionType* getFunctionType() { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PrimaryExpression; }
 };

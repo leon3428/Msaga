@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 enum class NodeType : uint8_t {
     PrimaryExpression, Expression, 
@@ -86,6 +87,24 @@ namespace Msaga {
     bool isValidCharArray(const std::string &s);
 
     std::string exprTypeToString(ExprType t);
+
+    inline void writeConstToReg(std::ostream& stream, std::string_view reg, int constant) {
+        if(constant < (1 << 12)) {
+            stream << '\t' << "addi " << reg << ", x0, " << constant << '\n';
+        } else {
+            stream << '\t' << "lui " << reg << ", %hi(" << constant << ")\n";
+            stream << '\t' << "addi " << reg << ',' << reg << " %lo(" << constant << ")\n"; 
+        }
+    }
+    inline void writeLabelToReg(std::ostream& stream, std::string_view reg, std::string_view label) {
+        stream << '\t' << "lui " << reg << ", %hi(" << label << ")\n";
+        stream << '\t' << "addi " << reg << ',' << reg << " %lo(" << label << ")\n"; 
+    }
+
+    inline void writeRegToStack(std::ostream& stream, std::string_view reg) {
+        stream << '\t' << "addi sp, sp, -4\n";
+        stream << '\t' << "sw " << reg << ", 0(sp)\n";
+    }
 }
 
 #endif // GLOBAL_H

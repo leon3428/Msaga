@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-EXAMPLES_DIR = 'test/examples3'
+EXAMPLES_DIR = 'test/examples6'
 
 def main():
     for dir in os.listdir(EXAMPLES_DIR):
@@ -18,10 +18,10 @@ def main():
             with open(os.path.join(EXAMPLES_DIR, dir, 'test.in'), 'w') as test_in:
                 test_in.write(p2.stdout)
 
-            p3 = subprocess.run(['build/src/Msaga'], input=p2.stdout, capture_output=True, text=True)
+            # p3 = subprocess.run(['build/src/Msaga'], input=p2.stdout, capture_output=True, text=True)
 
-            with open(os.path.join(EXAMPLES_DIR, dir, 'test.out'), 'w') as test_out:
-                test_out.write(p3.stdout)
+            # with open(os.path.join(EXAMPLES_DIR, dir, 'test.out'), 'w') as test_out:
+            #     test_out.write(p3.stdout)
             
 
 

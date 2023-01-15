@@ -17,6 +17,13 @@ void PrimaryExpression::check() {
         m_isLValue = idn -> exprType == ExprType::Int || idn -> exprType == ExprType::Char; // check
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
+
+        try {
+            std::stol(l -> getLexicalUnit());
+        } catch(...) {
+            m_errorHandler();
+        }
+
         if(std::stol(l -> getLexicalUnit()) < INT32_MIN|| std::stol(l -> getLexicalUnit()) >= INT32_MAX)
             m_errorHandler();
 
@@ -45,6 +52,36 @@ void PrimaryExpression::check() {
         m_isLValue = expr -> isLValue();
     } else {
         m_errorHandler();
+    }
+}
+
+void PrimaryExpression::generateCodePost(std::ostream &stream) const {
+    if(checkChildren<NodeType::LeafIdn>()) {
+        LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
+
+        auto idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
+        Msaga::writeLabelToReg(stream, "t0", "variable_" + std::to_string(idn -> id));
+        Msaga::writeRegToStack(stream, "t0");
+    } else if(checkChildren<NodeType::LeafNum>()) {
+        LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
+
+        Msaga::writeConstToReg(stream, "t0", std::stoi(l -> getLexicalUnit()));
+        Msaga::writeRegToStack(stream, "t0");
+    } else if(checkChildren<NodeType::LeafCharacter>()) {
+        LeafCharacter *l = static_cast<LeafCharacter*>(m_children[0].get());
+
+        Msaga::writeConstToReg(stream, "t0", static_cast<int>(l -> getLexicalUnit()[1]));
+        Msaga::writeRegToStack(stream, "t0");
+    } else if(checkChildren<NodeType::LeafCharArray>()) {
+        LeafCharArray *l = static_cast<LeafCharArray*>(m_children[0].get());
+        std::string_view s = l -> getLexicalUnit();
+        for(size_t i = 1; i < s.size(); i++) {
+            Msaga::writeConstToReg(stream, "t0", static_cast<int>(s[i]));
+            stream << '\t' << "sw t0, -"<< 4 * i << "(sp)\n";
+        }
+        Msaga::writeConstToReg(stream, "t0", 0);
+        stream << '\t' << "sw t0, -"<< 4 * s.size() << "(sp)\n";
+        stream << '\t' << "addi sp, sp, -" << 4 * s.size() << '\n';
     }
 }
 

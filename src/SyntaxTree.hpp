@@ -34,6 +34,8 @@ protected:
 
 public: 
     virtual void check() = 0;                                   ///> checks all associated rules
+    virtual void generateCodePrev(std::ostream &stream) const;
+    virtual void generateCodePost(std::ostream &stream) const;
     virtual inline NodeType getNodeType() const = 0;
 
     template<typename T, typename... Args>
@@ -65,11 +67,15 @@ private:
     std::unique_ptr<SyntaxTreeNode> m_root;
 
     void m_printHelper(SyntaxTreeNode *node, int indent_level);
+    void m_generateCodeHelper(SyntaxTreeNode *node, std::ostream &stream) const;
 
 public:
     void load(std::istream &stream);
     inline void print() { m_printHelper(m_root.get(), 0); }
     void check();
+    inline void generateCode(std::ostream &stream) const {
+        m_generateCodeHelper(m_root.get(), stream);
+    }
 };
 
 #endif //SYNTAX_TREE_H

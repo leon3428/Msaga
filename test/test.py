@@ -2,7 +2,7 @@ import os
 import time
 import subprocess
 
-EXAMPLES_DIR = 'test/examples'
+EXAMPLES_DIR = 'test/examples4'
 
 def main():
     for dir in os.listdir(EXAMPLES_DIR):
@@ -12,11 +12,7 @@ def main():
             in_file_content = in_file.read()
             out_file_content = out_file.read()
 
-            begin_t = time.time()
-
             p = subprocess.run(['build/src/Msaga'], input=in_file_content, capture_output=True, text=True)
-
-            end_t = time.time()
 
             if p.stdout == out_file_content:
                 print('Test', dir, 'passed')
@@ -26,8 +22,6 @@ def main():
                 print(p.stdout)
                 print(out_file_content)
                 
-
-            #print('Table generation took: ', end_t-begin_t)
 
 if __name__ == '__main__':
     main()

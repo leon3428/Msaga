@@ -23,6 +23,9 @@ void SyntaxTreeNode::m_errorHandler() {
     exit(1);
 }
 
+void SyntaxTreeNode::generateCodePrev(std::ostream&) const {}
+void SyntaxTreeNode::generateCodePost(std::ostream&) const {}
+
 StackItem::StackItem(SyntaxTreeNode *n, int indLevel, bool inLoop, ExprType funRetType, int charArrayLen)
     : node(n), indentLevel(indLevel), insideLoop(inLoop), functionReturnType(funRetType), characterArrayLength(charArrayLen) {}
 
@@ -65,7 +68,12 @@ void SyntaxTree::load(std::istream &stream) {
             SyntaxTreeNode *parent = node_stack.top().node;
             auto p = Msaga::constructInnerNode(ch, parent);
 
-            if(ch == "<slozena_naredba>") {
+
+
+            if(ch == "<slozena_naredba>" && parent -> getNodeType() == NodeType::Command) {
+                m_contextNodes.push_back(std::make_unique<ContextNode>(parent -> getLocalContextNode()));
+                p -> setLocalContextNode(m_contextNodes.back().get());
+            } else if(ch == "<definicija_funkcije>") {
                 m_contextNodes.push_back(std::make_unique<ContextNode>(parent -> getLocalContextNode()));
                 p -> setLocalContextNode(m_contextNodes.back().get());
             } else {
@@ -131,6 +139,7 @@ void SyntaxTree::check() {
        idn -> functionType -> returnType != ExprType::Int)
     {
         std::cout << "main" << std::endl;
+        return;
     }
 
     bool allDefined = true;
@@ -141,3 +150,14 @@ void SyntaxTree::check() {
     if(!allDefined)
         std::cout << "funkcija" << std::endl;
 }
+
+void SyntaxTree::m_generateCodeHelper(SyntaxTreeNode *node, std::ostream &stream) const {
+    node -> generateCodePrev(stream);
+
+    for(size_t i = 0;i < node -> getChildrenCnt(); i++)
+        m_generateCodeHelper(node -> getChild(i), stream);
+
+    node -> generateCodePost(stream);
+}
+
+

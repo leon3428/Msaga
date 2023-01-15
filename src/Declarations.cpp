@@ -31,7 +31,7 @@ void FunctionDefinition::check() {
 			}
 			idn -> defined = true;
 		} else {
-			m_localContext -> declareFunction(lIdn -> getLexicalUnit(), true, {{ExprType::Void}, tn -> getExprType()});
+			m_localContext -> getParent() -> declareFunction(lIdn -> getLexicalUnit(), true, {{ExprType::Void}, tn -> getExprType()});
 		}
 
 		m_children[5] -> check();
@@ -62,7 +62,7 @@ void FunctionDefinition::check() {
 
 			idn -> defined = true;
 		} else {
-			m_localContext -> declareFunction(lIdn -> getLexicalUnit(), true, {pl -> getTypes(), tn -> getExprType()});
+			m_localContext -> getParent() -> declareFunction(lIdn -> getLexicalUnit(), true, {pl -> getTypes(), tn -> getExprType()});
 			for(size_t i = 0;i < pl -> getSize();i++) {
 				m_localContext -> declareVariable(pl -> getName(i), pl -> getType(i));
 			}
@@ -72,6 +72,15 @@ void FunctionDefinition::check() {
 	} else {
 		m_errorHandler();
 	}
+}
+
+void FunctionDefinition::generateCodePrev(std::ostream &stream) const {
+	LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
+	stream << "function_" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << '\n'; 
+}
+
+void FunctionDefinition::generateCodePost(std::ostream &stream) const {
+	stream << '\t' << "jalr x0, 0(ra)\n";
 }
 
 void ParameterList::check() {

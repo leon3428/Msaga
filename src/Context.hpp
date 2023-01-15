@@ -11,6 +11,7 @@ struct Identifier {
     ExprType exprType = ExprType::Void;
     bool defined = false;
     const Msaga::FunctionType *functionType = nullptr;
+    int id = -1;
 
     Identifier() = default;
     Identifier(ExprType type, bool isDefined, const Msaga::FunctionType *ft);
@@ -37,6 +38,7 @@ public:
     }
 
     [[nodiscard]] bool allDefined(ContextNode *globalContext);
+    [[nodiscard]] inline ContextNode* getParent() { return m_parent; }
 };
 
 #endif //CONTEXT_H
