@@ -74,12 +74,12 @@ void FunctionDefinition::check() {
 	}
 }
 
-void FunctionDefinition::generateCodePrev(std::ostream &stream) const {
+void FunctionDefinition::generateCode(std::ostream &stream) {
 	LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
-	stream << "function_" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << '\n'; 
-}
+	stream << "function_" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
+	stream << "sw ra, 0(fp)\n";
 
-void FunctionDefinition::generateCodePost(std::ostream &stream) const {
+	Msaga::allChildrenGenerateCode(stream, this);
 	stream << '\t' << "jalr x0, 0(ra)\n";
 }
 

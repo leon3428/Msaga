@@ -3,7 +3,7 @@
 static int maxId = 0;
 
 Identifier::Identifier(ExprType type, bool isDefined, const Msaga::FunctionType *ft)
-    : exprType(type), defined(isDefined), functionType(ft), id(maxId++) {}
+    : exprType(type), defined(isDefined), functionType(ft), id(maxId++), offset(0) {}
 
 ContextNode::ContextNode(ContextNode *parent)
     : m_parent(parent) {}

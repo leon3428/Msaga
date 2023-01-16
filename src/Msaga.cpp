@@ -12,5 +12,6 @@ int main() {
     st.generateCode(outputStream);
 
     outputStream.close();
+    
     return 0;
 }

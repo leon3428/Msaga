@@ -23,8 +23,9 @@ void SyntaxTreeNode::m_errorHandler() {
     exit(1);
 }
 
-void SyntaxTreeNode::generateCodePrev(std::ostream&) const {}
-void SyntaxTreeNode::generateCodePost(std::ostream&) const {}
+void SyntaxTreeNode::generateCode(std::ostream& stream) {
+    Msaga::allChildrenGenerateCode(stream, this);
+}
 
 StackItem::StackItem(SyntaxTreeNode *n, int indLevel, bool inLoop, ExprType funRetType, int charArrayLen)
     : node(n), indentLevel(indLevel), insideLoop(inLoop), functionReturnType(funRetType), characterArrayLength(charArrayLen) {}
@@ -151,13 +152,18 @@ void SyntaxTree::check() {
         std::cout << "funkcija" << std::endl;
 }
 
-void SyntaxTree::m_generateCodeHelper(SyntaxTreeNode *node, std::ostream &stream) const {
-    node -> generateCodePrev(stream);
 
-    for(size_t i = 0;i < node -> getChildrenCnt(); i++)
-        m_generateCodeHelper(node -> getChild(i), stream);
+void SyntaxTree::generateCode(std::ostream &stream) const {
+    stream << "program_start ";
+    Msaga::writeConstToReg(stream, "sp", (1 << 18));
 
-    node -> generateCodePost(stream);
+    auto idn = m_root -> getLocalContextNode() -> getIdentifier("main");
+    Msaga::preCall(stream);
+    stream << '\t' << "jal ra, function_" <<  idn -> id << '\n';
+    Msaga::postCall(stream);
+
+    stream << '\t' << "addi x6, a0, 0\n";
+    stream << '\t' << "HALT\n\n"; 
+
+    m_root -> generateCode(stream);
 }
-
-

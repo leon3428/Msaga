@@ -13,8 +13,7 @@
 class FunctionDefinition : public SyntaxTreeNode {
 public:
     void check() override;
-	void generateCodePrev(std::ostream &stream) const override;
-	void generateCodePost(std::ostream &stream) const override;
+	void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::FunctionDefinition; }
 };

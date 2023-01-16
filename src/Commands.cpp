@@ -124,6 +124,19 @@ void JumpCommand::check() {
 	}
 }
 
+void JumpCommand::generateCode(std::ostream &stream) {
+	if(checkChildren<NodeType::LeafKwContinue, NodeType::LeafSemicolon>()) {
+
+	} else if(checkChildren<NodeType::LeafKwBreak, NodeType::LeafSemicolon>()) {
+
+	} else if(checkChildren<NodeType::LeafKwReturn, NodeType::LeafSemicolon>()) {
+
+	} else if(checkChildren<NodeType::LeafKwReturn, NodeType::Expression, NodeType::LeafSemicolon>()) {
+		m_children[1] -> generateCode(stream);
+		Msaga::popToReg(stream, "a0");
+	}
+}
+
 void TranslationUnit::check() {
 	if(checkChildren<NodeType::ExternalDeclaration>()) {
         m_children[0] -> check();

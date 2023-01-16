@@ -12,6 +12,7 @@ struct Identifier {
     bool defined = false;
     const Msaga::FunctionType *functionType = nullptr;
     int id = -1;
+    int offset = 0;
 
     Identifier() = default;
     Identifier(ExprType type, bool isDefined, const Msaga::FunctionType *ft);

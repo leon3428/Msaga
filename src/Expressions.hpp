@@ -13,13 +13,16 @@ class GenericExpression : public SyntaxTreeNode {
 protected:
     ExprType m_exprType;
     bool m_isLValue;
+    Identifier *m_idn = nullptr;
 
 public:
     [[nodiscard]] inline ExprType getExprType() const { return m_exprType; }
     [[nodiscard]] inline bool isLValue() const { return m_isLValue; }
+    [[nodiscard]] inline Identifier* getIdentifier() const { return m_idn; }
 
     inline void setExprType(ExprType exprType) { m_exprType = exprType; }
     inline void setLValue(bool LValue) { m_isLValue = LValue; }
+    inline void setIdentifier(Identifier *idn) { m_idn = idn; }
 };
 
 /**
@@ -32,7 +35,7 @@ protected:
 public:
     void check() override;
 
-	void generateCodePost(std::ostream &stream) const override;
+	void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline const Msaga::FunctionType* getFunctionType() { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PrimaryExpression; }
@@ -99,6 +102,8 @@ private:
 public:
 	PostfixExpression() = default;
 	void check() override;
+
+    void generateCode(std::ostream &stream) override;
 
 	[[nodiscard]] inline const Msaga::FunctionType* getFunctionType() const { return m_functionType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::PostfixExpression; }

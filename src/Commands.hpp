@@ -96,6 +96,7 @@ public:
 	inline void setInsideLoop(bool insideLoop) { m_insideLoop = insideLoop; }
 	[[nodiscard]] inline bool isInsideLoop() const { return m_insideLoop; }
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline ExprType getFunctionReturnType() const { return m_functionReturnType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::JumpCommand; }

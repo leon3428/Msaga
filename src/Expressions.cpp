@@ -7,14 +7,14 @@ void PrimaryExpression::check() {
     if(checkChildren<NodeType::LeafIdn>()) {
         LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
 
-        const Identifier *idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
-        if(idn == nullptr)
+        m_idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
+        if(m_idn == nullptr)
             m_errorHandler();
 
-        if(idn -> exprType == ExprType::Function)
-            m_functionType = idn -> functionType;
-        m_exprType = idn -> exprType;
-        m_isLValue = idn -> exprType == ExprType::Int || idn -> exprType == ExprType::Char; // check
+        if(m_idn -> exprType == ExprType::Function)
+            m_functionType = m_idn -> functionType;
+        m_exprType = m_idn -> exprType;
+        m_isLValue = m_idn -> exprType == ExprType::Int || m_idn -> exprType == ExprType::Char; // check
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
 
@@ -29,6 +29,7 @@ void PrimaryExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else if(checkChildren<NodeType::LeafCharacter>()) {
         LeafCharacter *l = static_cast<LeafCharacter *>(m_children[0].get());
         if(!Msaga::isValidChar(l -> getLexicalUnit()))
@@ -36,6 +37,7 @@ void PrimaryExpression::check() {
 
         m_exprType = ExprType::Char;
         m_isLValue = false;
+        m_idn = nullptr;
     } else if(checkChildren<NodeType::LeafCharArray>()) {
         LeafCharArray *l = static_cast<LeafCharArray*>(m_children[0].get());
         if(!Msaga::isValidCharArray(l -> getLexicalUnit()))
@@ -43,10 +45,11 @@ void PrimaryExpression::check() {
 
         m_exprType = ExprType::ArrayConstChar;
         m_isLValue = false;
+        m_idn = nullptr;
     } else if(checkChildren<NodeType::LeafLeftBracket, NodeType::Expression, NodeType::LeafRightBracket>()){
         Expression *expr = static_cast<Expression*>(m_children[1].get());
-
         expr -> check();
+        m_idn = expr -> getIdentifier();
 
         m_exprType = expr -> getExprType();
         m_isLValue = expr -> isLValue();
@@ -55,12 +58,12 @@ void PrimaryExpression::check() {
     }
 }
 
-void PrimaryExpression::generateCodePost(std::ostream &stream) const {
+void PrimaryExpression::generateCode(std::ostream &stream) {
     if(checkChildren<NodeType::LeafIdn>()) {
         LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
 
         auto idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
-        Msaga::writeLabelToReg(stream, "t0", "variable_" + std::to_string(idn -> id));
+        Msaga::loadLocalVariable(stream, "t0", idn -> offset);
         Msaga::writeRegToStack(stream, "t0");
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
@@ -75,7 +78,7 @@ void PrimaryExpression::generateCodePost(std::ostream &stream) const {
     } else if(checkChildren<NodeType::LeafCharArray>()) {
         LeafCharArray *l = static_cast<LeafCharArray*>(m_children[0].get());
         std::string_view s = l -> getLexicalUnit();
-        for(size_t i = 1; i < s.size(); i++) {
+        for(size_t i = s.size() - 2; i >= 1; i--) {
             Msaga::writeConstToReg(stream, "t0", static_cast<int>(s[i]));
             stream << '\t' << "sw t0, -"<< 4 * i << "(sp)\n";
         }
@@ -89,6 +92,7 @@ void Expression::check() {
     if(checkChildren<NodeType::AssignmentExpression>()) {
         AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[0].get());
         aExpr -> check();
+        m_idn = aExpr -> getIdentifier();
 
         m_exprType = aExpr -> getExprType();
         m_isLValue = aExpr -> isLValue();
@@ -96,6 +100,7 @@ void Expression::check() {
         m_children[0] -> check();
         AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[2].get());
         aExpr -> check();
+        m_idn = nullptr;
 
         m_exprType = aExpr -> getExprType();
         m_isLValue = false;
@@ -108,12 +113,14 @@ void AssignmentExpression::check() {
     if(checkChildren<NodeType::LogicalOrExpression>()) {
         LogicalOrExpression *lorExpr = static_cast<LogicalOrExpression*>(m_children[0].get());
         lorExpr -> check();
+        m_idn = lorExpr -> getIdentifier();
 
         m_exprType = lorExpr -> getExprType();
         m_isLValue = lorExpr -> isLValue();
     } else if (checkChildren<NodeType::PostfixExpression, NodeType::LeafAssignment, NodeType::AssignmentExpression>()){
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
         AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[2].get());
+        m_idn = nullptr;
 
         pExpr -> check();
         if(!pExpr -> isLValue())
@@ -133,6 +140,7 @@ void LogicalOrExpression::check() {
     if(checkChildren<NodeType::LogicalAndExpression>()) {
         LogicalAndExpression *landExpr = static_cast<LogicalAndExpression*>(m_children[0].get());
         landExpr -> check();
+        m_idn = landExpr -> getIdentifier();
 
         m_exprType = landExpr -> getExprType();
         m_isLValue = landExpr -> isLValue();
@@ -149,6 +157,7 @@ void LogicalOrExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -158,6 +167,7 @@ void LogicalAndExpression::check() {
     if(checkChildren<NodeType::BitwiseOrExpression>()) {
         BitwiseOrExpression *borExpr = static_cast<BitwiseOrExpression*>(m_children[0].get());
         borExpr -> check();
+        m_idn = borExpr -> getIdentifier();
 
         m_exprType = borExpr -> getExprType();
         m_isLValue = borExpr -> isLValue(); 
@@ -174,6 +184,7 @@ void LogicalAndExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -183,6 +194,7 @@ void BitwiseOrExpression::check() {
     if(checkChildren<NodeType::BitwiseXorExpression>()) {
         BitwiseXorExpression *bxorExpr = static_cast<BitwiseXorExpression*>(m_children[0].get());
         bxorExpr -> check();
+        m_idn = bxorExpr -> getIdentifier();
 
         m_exprType = bxorExpr -> getExprType();
         m_isLValue = bxorExpr -> isLValue();
@@ -199,6 +211,7 @@ void BitwiseOrExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -208,6 +221,7 @@ void BitwiseXorExpression::check() {
     if(checkChildren<NodeType::BitwiseAndExpression>()) {
         BitwiseAndExpression *bandExpr = static_cast<BitwiseAndExpression*>(m_children[0].get());
         bandExpr -> check();
+        m_idn = bandExpr -> getIdentifier();
 
         m_exprType = bandExpr -> getExprType();
         m_isLValue = bandExpr -> isLValue();
@@ -224,6 +238,7 @@ void BitwiseXorExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -233,6 +248,7 @@ void BitwiseAndExpression::check() {
     if(checkChildren<NodeType::EqualsExpression>()) {
         EqualsExpression *eqExpr = static_cast<EqualsExpression*>(m_children[0].get());
         eqExpr -> check();
+        m_idn = eqExpr -> getIdentifier();
 
         m_exprType = eqExpr -> getExprType();
         m_isLValue = eqExpr -> isLValue();
@@ -249,6 +265,7 @@ void BitwiseAndExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -258,6 +275,7 @@ void EqualsExpression::check() {
     if(checkChildren<NodeType::ComparisonExpression>()) {
         ComparisonExpression *cmpExpr = static_cast<ComparisonExpression*>(m_children[0].get());
         cmpExpr -> check();
+        m_idn = cmpExpr -> getIdentifier();
 
         m_exprType = cmpExpr -> getExprType();
         m_isLValue = cmpExpr -> isLValue(); 
@@ -276,6 +294,7 @@ void EqualsExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -285,6 +304,7 @@ void ComparisonExpression::check() {
     if(checkChildren<NodeType::AdditiveExpression>()) {
         AdditiveExpression *addExpr = static_cast<AdditiveExpression*>(m_children[0].get());
         addExpr -> check();
+        m_idn = addExpr -> getIdentifier();
 
         m_exprType = addExpr -> getExprType();
         m_isLValue = addExpr -> isLValue();
@@ -305,6 +325,7 @@ void ComparisonExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -314,6 +335,7 @@ void AdditiveExpression::check() {
     if(checkChildren<NodeType::MultiplicativeExpression>()) {
         MultiplicativeExpression *mulExpr = static_cast<MultiplicativeExpression*>(m_children[0].get());
         mulExpr -> check();
+        m_idn = mulExpr -> getIdentifier();
         m_exprType = mulExpr -> getExprType();
         m_isLValue = mulExpr -> isLValue();
     } else if(checkChildren<NodeType::AdditiveExpression, NodeType::LeafPlus, NodeType::MultiplicativeExpression>() ||
@@ -331,6 +353,7 @@ void AdditiveExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -340,6 +363,7 @@ void MultiplicativeExpression::check() {
     if(checkChildren<NodeType::CastExpression>()) {
         CastExpression *castExpr = static_cast<CastExpression*>(m_children[0].get());
         castExpr -> check();
+        m_idn = castExpr -> getIdentifier();
         m_exprType = castExpr -> getExprType();
         m_isLValue = castExpr -> isLValue();
     } else if(checkChildren<NodeType::MultiplicativeExpression, NodeType::LeafMult, NodeType::CastExpression>() ||
@@ -358,6 +382,7 @@ void MultiplicativeExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -367,6 +392,7 @@ void CastExpression::check(){
     if(checkChildren<NodeType::UnaryExpression>()) {
         UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[0].get());
         uExpr -> check();
+        m_idn = uExpr -> getIdentifier();
 
         m_exprType = uExpr -> getExprType();
         m_isLValue = uExpr -> isLValue();
@@ -381,6 +407,7 @@ void CastExpression::check(){
 
         m_exprType = tn -> getExprType();
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -390,6 +417,7 @@ void UnaryExpression::check() {
     if(checkChildren<NodeType::PostfixExpression>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
         pExpr -> check();
+        m_idn = pExpr -> getIdentifier();
 
         m_exprType = pExpr -> getExprType();
         m_isLValue = pExpr -> isLValue();
@@ -403,6 +431,7 @@ void UnaryExpression::check() {
         
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else if(checkChildren<NodeType::UnaryOperator, NodeType::CastExpression>()) {
         CastExpression *cExpr = static_cast<CastExpression*>(m_children[1].get());
 
@@ -412,6 +441,7 @@ void UnaryExpression::check() {
         
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
@@ -420,8 +450,9 @@ void UnaryExpression::check() {
 void PostfixExpression::check() {
     if(checkChildren<NodeType::PrimaryExpression>()) {
         PrimaryExpression *pExpr = static_cast<PrimaryExpression*>(m_children[0].get());
-
         pExpr -> check();
+
+        m_idn = pExpr -> getIdentifier();
         m_functionType = pExpr -> getFunctionType();
         m_exprType = pExpr -> getExprType();
         m_isLValue = pExpr -> isLValue();
@@ -438,6 +469,7 @@ void PostfixExpression::check() {
         
         m_exprType = Msaga::arrayBaseType(pExpr -> getExprType());
         m_isLValue = !Msaga::isConst(pExpr -> getExprType());
+        m_idn = nullptr;
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::LeafRightBracket>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
 
@@ -448,6 +480,7 @@ void PostfixExpression::check() {
 
         m_exprType = ft -> returnType;
         m_isLValue = false;
+        m_idn = nullptr;
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::ArgumentList, NodeType::LeafRightBracket>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
         ArgumentList *al = static_cast<ArgumentList*>(m_children[2].get());
@@ -469,6 +502,7 @@ void PostfixExpression::check() {
 
         m_exprType = ft -> returnType;
         m_isLValue = false;
+        m_idn = nullptr;
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafInc>() ||
               checkChildren<NodeType::PostfixExpression, NodeType::LeafDec>())
     {
@@ -480,7 +514,56 @@ void PostfixExpression::check() {
 
         m_exprType = ExprType::Int;
         m_isLValue = false;
+        m_idn = nullptr;
     } else {
         m_errorHandler();
     }
+}
+
+
+void PostfixExpression::generateCode(std::ostream &stream) {
+    if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftSquareBracket, NodeType::Expression, NodeType::LeafRightSquareBracket>()) {
+        m_children[2] -> generateCode(stream);
+        PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
+        if(pExpr -> getIdentifier() == nullptr) {
+            // =>* ConstCharacterArray
+            stream << '\t' << "lw t0, 0(sp)\n";
+            stream << '\t' << "slli t0, t0, 2\n";
+            stream << '\t' << "add t0, sp, t0\n";
+            stream << '\t' << "lw t0, 0(t0)\n";
+            stream << '\t' << "sw t0, 0(sp)\n";
+        } else {
+            // array variable
+            stream << '\t' << "lw t0, 0(sp)\n";
+            stream << '\t' << "slli t0, t0, 2\n";
+            Msaga::writeConstToReg(stream, "t1", pExpr -> getIdentifier() -> offset);
+            stream << '\t' << "add t1, t1, t0\n";
+            stream << '\t' << "lw t0, 0(t1)\n";
+            stream << '\t' << "sw t0, 0(sp)\n";
+        }
+    } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::LeafRightBracket>()) {
+        PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
+        Msaga::preCall(stream);
+        stream << '\t' << "jal ra, function_" <<  pExpr -> getIdentifier() -> id << '\n';
+        Msaga::postCall(stream);
+    } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::ArgumentList, NodeType::LeafRightBracket>()) {
+        Msaga::preCall(stream);
+        m_children[2] -> generateCode(stream);
+
+        PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
+        stream << '\t' << "jal ra, function_" <<  pExpr -> getIdentifier() -> id << '\n';
+        Msaga::postCall(stream);
+    } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafInc>()) {
+        PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
+        Msaga::loadLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
+        Msaga::writeRegToStack(stream, "t0");
+        stream << '\t' << "addi t0, t0, 1\n";
+        Msaga::saveLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
+    } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafDec>()) {
+        PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
+        Msaga::loadLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
+        Msaga::writeRegToStack(stream, "t0");
+        stream << '\t' << "addi t0, t0, -1\n";
+        Msaga::saveLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
+    } 
 }

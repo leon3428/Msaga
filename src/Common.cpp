@@ -1,4 +1,5 @@
 #include "Common.hpp"
+#include "SyntaxTree.hpp"
 
 // true if a can be implicitly converted to b
 bool Msaga::implicitlyConvertible(ExprType a, ExprType b) {
@@ -128,4 +129,9 @@ std::string Msaga::exprTypeToString(ExprType t) {
         return "Function";
     
     return "Error";
+}
+
+void Msaga::allChildrenGenerateCode(std::ostream& stream, SyntaxTreeNode *node) {
+    for(size_t i = 0;i < node -> getChildrenCnt(); i++)
+        node -> getChild(i) -> generateCode(stream);
 }
