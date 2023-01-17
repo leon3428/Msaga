@@ -131,7 +131,16 @@ std::string Msaga::exprTypeToString(ExprType t) {
     return "Error";
 }
 
+std::map<int, int> Msaga::constants;
+
 void Msaga::allChildrenGenerateCode(std::ostream& stream, SyntaxTreeNode *node) {
     for(size_t i = 0;i < node -> getChildrenCnt(); i++)
         node -> getChild(i) -> generateCode(stream);
+}
+
+int Msaga::getConstLabelId(int constant) {
+    if(constants.find(constant) == constants.end())
+        constants[constant] = constants.size();
+
+    return constants[constant];
 }

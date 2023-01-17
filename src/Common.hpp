@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
-//#include "SyntaxTree.hpp"
+#include <map>
 
 enum class NodeType : uint8_t {
     PrimaryExpression, Expression, 
@@ -90,54 +90,15 @@ namespace Msaga {
 
     std::string exprTypeToString(ExprType t);
 
+    extern std::map<int, int> constants;
+    int getConstLabelId(int constant);
+
     inline void writeConstToReg(std::ostream& stream, std::string_view reg, int constant) {
-        if(constant < (1 << 12)) {
-            stream << '\t' << "addi " << reg << ", x0, " << constant << '\n';
+        if(constant > -(1 << 19) && constant < (1 << 19)) {
+            stream << '\t' << "MOVE 0" << std::hex << constant << ", " << reg << '\n'; 
         } else {
-            stream << '\t' << "lui " << reg << ", %hi(" << constant << ")\n";
-            stream << '\t' << "addi " << reg << ',' << reg << " %lo(" << constant << ")\n"; 
+            stream << '\t' << "LOAD " << reg << ",(const" << getConstLabelId(constant) << ")\n";
         }
-    }
-
-    inline void writeRegToStack(std::ostream& stream, std::string_view reg) {
-        stream << '\t' << "addi sp, sp, -4\n";
-        stream << '\t' << "sw " << reg << ", 0(sp)\n";
-    }
-
-    inline void loadLocalVariable(std::ostream& stream, std::string_view rd, int offset) {
-        if(offset >= -2048 && offset < 2048) {
-            stream << '\t' << "lw " << rd << ", " << offset << "(fp)\n";
-        } else {
-            writeConstToReg(stream, "s11", offset);
-            stream << '\t' << "add s11, fp, s11\n";
-            stream << '\t' << "lw " << rd << ", 0(s11)";
-        }
-    }
-    
-    inline void saveLocalVariable(std::ostream& stream, std::string_view rs, int offset) {
-        if(offset >= -2048 && offset < 2048) {
-            stream << '\t' << "sw " << rs << ", " << offset << "(fp)\n";
-        } else {
-            writeConstToReg(stream, "s11", offset);
-            stream << '\t' << "add s11, fp, s11\n";
-            stream << '\t' << "lw " << rs << ", 0(s11)";
-        }
-    }
-
-    inline void popToReg(std::ostream& stream, std::string_view rd) {
-        stream << '\t' << "lw " << rd << ", 0(sp)\n";
-        stream << '\t' << "addi sp, sp, 4\n";
-    }
-
-    inline void preCall(std::ostream& stream) {
-        stream << '\t' << "sw fp, -4(sp)\n";
-        stream << '\t' << "addi fp, sp, -4\n";
-        stream << '\t' << "addi sp, sp, -8\n";
-    }
-
-    inline void postCall(std::ostream& stream) {
-        stream << '\t' << "addi sp, fp, 8\n";
-        stream << '\t' << "lw fp, 4(fp)\n";
     }
 
     void allChildrenGenerateCode(std::ostream& stream, SyntaxTreeNode *node);

@@ -68,10 +68,12 @@ private:
     void m_printHelper(SyntaxTreeNode *node, int indent_level);
 
 public:
-    void load(std::istream &stream);
-    inline void print() { m_printHelper(m_root.get(), 0); }
     void check();
     void generateCode(std::ostream &stream) const;
+    void load(std::istream &stream);
+
+    inline void print() { m_printHelper(m_root.get(), 0); }
+    
 };
 
 #endif //SYNTAX_TREE_H

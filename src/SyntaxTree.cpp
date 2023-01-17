@@ -154,16 +154,20 @@ void SyntaxTree::check() {
 
 
 void SyntaxTree::generateCode(std::ostream &stream) const {
-    stream << "program_start ";
-    Msaga::writeConstToReg(stream, "sp", (1 << 18));
+    stream << "p_start ";
+    stream << '\t' << "MOVE 40000, R7\n";
 
     auto idn = m_root -> getLocalContextNode() -> getIdentifier("main");
-    Msaga::preCall(stream);
-    stream << '\t' << "jal ra, function_" <<  idn -> id << '\n';
-    Msaga::postCall(stream);
-
-    stream << '\t' << "addi x6, a0, 0\n";
+    stream << '\t' << "PUSH R6\n";
+    stream << '\t' << "CALL func" << idn -> id << '\n';
+    stream << '\t' << "POP R6\n";
+    stream << '\t' << "MOVE R5, R6\n";
     stream << '\t' << "HALT\n\n"; 
+
+    for(auto [constant, id] : Msaga::constants)
+        stream << "const" << id << " DW 0" << std::hex << constant << '\n';
 
     m_root -> generateCode(stream);
 }
+
+

@@ -75,12 +75,20 @@ void FunctionDefinition::check() {
 }
 
 void FunctionDefinition::generateCode(std::ostream &stream) {
-	LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
-	stream << "function_" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
-	stream << "sw ra, 0(fp)\n";
+	if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
+	   NodeType::LeafKwVoid, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
+	{
+		LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
+		stream << "func" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << '\t' << "RET\n";
+	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
+	   NodeType::ParameterList, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
+	{
 
-	Msaga::allChildrenGenerateCode(stream, this);
-	stream << '\t' << "jalr x0, 0(ra)\n";
+	} else {
+		Msaga::allChildrenGenerateCode(stream, this);
+	}
 }
 
 void ParameterList::check() {

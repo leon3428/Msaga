@@ -133,8 +133,10 @@ void JumpCommand::generateCode(std::ostream &stream) {
 
 	} else if(checkChildren<NodeType::LeafKwReturn, NodeType::Expression, NodeType::LeafSemicolon>()) {
 		m_children[1] -> generateCode(stream);
-		Msaga::popToReg(stream, "a0");
-	}
+		stream << '\t' << "POP R5\n";
+	} else {
+        Msaga::allChildrenGenerateCode(stream, this);
+    }
 }
 
 void TranslationUnit::check() {

@@ -61,30 +61,31 @@ void PrimaryExpression::check() {
 void PrimaryExpression::generateCode(std::ostream &stream) {
     if(checkChildren<NodeType::LeafIdn>()) {
         LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
-
         auto idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
-        Msaga::loadLocalVariable(stream, "t0", idn -> offset);
-        Msaga::writeRegToStack(stream, "t0");
+
+        stream << '\t' << "LOAD R0, (R6 + 0" << std::hex << idn -> offset << ")\n";
+        stream << '\t' << "PUSH R0\n";
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
 
-        Msaga::writeConstToReg(stream, "t0", std::stoi(l -> getLexicalUnit()));
-        Msaga::writeRegToStack(stream, "t0");
+        Msaga::writeConstToReg(stream, "R0", std::stoi(l -> getLexicalUnit()));
+        stream << '\t' << "PUSH R0\n";
     } else if(checkChildren<NodeType::LeafCharacter>()) {
         LeafCharacter *l = static_cast<LeafCharacter*>(m_children[0].get());
 
-        Msaga::writeConstToReg(stream, "t0", static_cast<int>(l -> getLexicalUnit()[1]));
-        Msaga::writeRegToStack(stream, "t0");
+        Msaga::writeConstToReg(stream, "R0", static_cast<int>(l -> getLexicalUnit()[1]));
+        stream << '\t' << "PUSH R0\n";
     } else if(checkChildren<NodeType::LeafCharArray>()) {
         LeafCharArray *l = static_cast<LeafCharArray*>(m_children[0].get());
         std::string_view s = l -> getLexicalUnit();
         for(size_t i = s.size() - 2; i >= 1; i--) {
-            Msaga::writeConstToReg(stream, "t0", static_cast<int>(s[i]));
-            stream << '\t' << "sw t0, -"<< 4 * i << "(sp)\n";
+            Msaga::writeConstToReg(stream, "R0", static_cast<int>(s[i]));
+            stream << '\t' << "PUSH R0\n";
         }
-        Msaga::writeConstToReg(stream, "t0", 0);
-        stream << '\t' << "sw t0, -"<< 4 * s.size() << "(sp)\n";
-        stream << '\t' << "addi sp, sp, -" << 4 * s.size() << '\n';
+        Msaga::writeConstToReg(stream, "R0", 0);
+        stream << '\t' << "PUSH R0\n";
+    } else {
+        Msaga::allChildrenGenerateCode(stream, this);
     }
 }
 
@@ -527,43 +528,48 @@ void PostfixExpression::generateCode(std::ostream &stream) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
         if(pExpr -> getIdentifier() == nullptr) {
             // =>* ConstCharacterArray
-            stream << '\t' << "lw t0, 0(sp)\n";
-            stream << '\t' << "slli t0, t0, 2\n";
-            stream << '\t' << "add t0, sp, t0\n";
-            stream << '\t' << "lw t0, 0(t0)\n";
-            stream << '\t' << "sw t0, 0(sp)\n";
+            stream << '\t' << "POP R0\n"; //index
+            stream << '\t' << "ADD SP, R0, R0\n"; // address
+            stream << '\t' << "LOAD R0, (R0)\n";
+            stream << '\t' << "PUSH R0\n";
         } else {
             // array variable
-            stream << '\t' << "lw t0, 0(sp)\n";
-            stream << '\t' << "slli t0, t0, 2\n";
-            Msaga::writeConstToReg(stream, "t1", pExpr -> getIdentifier() -> offset);
-            stream << '\t' << "add t1, t1, t0\n";
-            stream << '\t' << "lw t0, 0(t1)\n";
-            stream << '\t' << "sw t0, 0(sp)\n";
+            stream << '\t' << "POP R0\n"; //index
+            stream << '\t' << "ADD FP, R0, R0\n"; 
+            stream << '\t' << "LOAD R0, (R0 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+            stream << '\t' << "PUSH R0\n";
         }
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::LeafRightBracket>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        Msaga::preCall(stream);
-        stream << '\t' << "jal ra, function_" <<  pExpr -> getIdentifier() -> id << '\n';
-        Msaga::postCall(stream);
-    } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::ArgumentList, NodeType::LeafRightBracket>()) {
-        Msaga::preCall(stream);
-        m_children[2] -> generateCode(stream);
 
+        stream << '\t' << "PUSH R6\n";
+        stream << '\t' << "CALL func"  <<  pExpr -> getIdentifier() -> id << '\n';
+        stream << '\t' << "POP R6\n";
+        stream << '\t' << "PUSH R5\n";
+    } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::ArgumentList, NodeType::LeafRightBracket>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        stream << '\t' << "jal ra, function_" <<  pExpr -> getIdentifier() -> id << '\n';
-        Msaga::postCall(stream);
+        ArgumentList *aList = static_cast<ArgumentList*>(m_children[2].get());
+
+        stream << '\t' << "PUSH R6\n";
+        aList -> generateCode(stream);
+        stream << '\t' << "CALL func" << pExpr -> getIdentifier() -> id << '\n';
+        for(size_t i = 0; i< aList -> getSize(); i++)
+            stream << '\t' << "POP R0\n";
+        stream << '\t' << "POP R6\n";
+        stream << '\t' << "PUSH R5\n";
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafInc>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        Msaga::loadLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
-        Msaga::writeRegToStack(stream, "t0");
-        stream << '\t' << "addi t0, t0, 1\n";
-        Msaga::saveLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
+        stream << '\t' << "LOAD R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        stream << '\t' << "PUSH R0\n";
+        stream << '\t' << "ADD R0, 1, R0\n";
+        stream << '\t' << "STORE R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafDec>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        Msaga::loadLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
-        Msaga::writeRegToStack(stream, "t0");
-        stream << '\t' << "addi t0, t0, -1\n";
-        Msaga::saveLocalVariable(stream, "t0", pExpr -> getIdentifier() -> offset);
-    } 
+        stream << '\t' << "LOAD R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        stream << '\t' << "PUSH R0\n";
+        stream << '\t' << "ADD R0, -1, R0\n";
+        stream << '\t' << "STORE R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+    } else {
+        Msaga::allChildrenGenerateCode(stream, this);
+    }
 }
