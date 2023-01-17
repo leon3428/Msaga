@@ -164,8 +164,89 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
     stream << '\t' << "MOVE R5, R6\n";
     stream << '\t' << "HALT\n\n"; 
 
-    for(auto [constant, id] : Msaga::constants)
+    for(auto [constant, id] : Msaga::constants){
         stream << "const" << id << " DW 0" << std::hex << constant << '\n';
+	}
+	stream << "funcmul\n";
+	stream << "\tLOAD r1, (r6+4)\n";
+	stream << "\tLOAD r0, (r6+8)\n";
+	stream << "\tCMP r0, 0\n";
+	stream << "\tJP_P mulpoz1\n";
+	stream << "\tXOR r2, 1, r2\n";
+	stream << "mulpoz1\n";
+	stream << "\tCMP r1, 0\n";
+	stream << "\tJP_P mulpoz2\n";
+	stream << "\tXOR r2, 1, r2\n";
+	stream << "mulpoz2\n";
+	stream << "\tASHR R0, 31, R5\n";
+	stream << "\tADD R0, R5, R0\n";
+	stream << "\tXOR R0, R5, R0\n";
+	stream << "\tASHR R1, 31, R5\n";
+	stream << "\tADD R1, R5, R1\n";         
+	stream << "\tXOR R1, R5, R1\n";
+	stream << "\tMOVE 0, r5\n";
+	stream << "\tCMP r1, 0\n";
+	stream << "\tJP_Z loopmulend\n";
+	stream << "loopmul\n";
+	stream << "\tADD r5, r0, r5\n";
+	stream << "\tSUB r1, 1, r1\n";
+	stream << "\tCMP r1, 0\n";
+	stream << "\tJP_NZ loopmul\n";
+	stream << "loopmulend\n";
+	stream << "\tCMP r2, 0\n";
+	stream << "\tJP_Z mulend\n";
+	stream << "\tMOVE -1, R0\n";
+	stream << "\tXOR r5, r0, r5\n";
+	stream << "\tADD r5, 1, r5\n";
+	stream << "mulend\n";
+	stream << "\tRET\n";
+
+	stream << "funcdiv\n";
+	stream << "\tLOAD r1, (r6+4)\n";
+	stream << "\tLOAD r0, (r6+8)\n";
+	stream << "\tCMP r0, 0\n";
+	stream << "\tJP_P divpoz1\n";
+	stream << "\tXOR r2, 1, r2\n";
+	stream << "divpoz1\n";
+	stream << "\tCMP r1, 0\n";
+	stream << "\tJP_P divpoz2\n";
+	stream << "\tXOR r2, 1, r2\n";
+	stream << "divpoz2\n";
+	stream << "\tASHR R0, 31, R5\n";
+	stream << "\tADD R0, R5, R0\n";
+	stream << "\tXOR R0, R5, R0\n";
+	stream << "\tASHR R1, 31, R5\n";
+	stream << "\tADD R1, R5, R1\n";         
+	stream << "\tXOR R1, R5, R1\n";
+	stream << "\tMOVE 0, r5\n";
+	stream << "\tCMP r1, 0\n";
+	stream << "\tJP_Z loopdivend\n";
+	stream << "loopdiv\n";
+	stream << "\tSUB r0, r1, r0\n";
+	stream << "\tCMP r0, 0\n";
+	stream << "\tJP_N loopdivend\n";
+	stream << "\tADD r5, 1, r5\n";
+	stream << "\tJP loopdiv\n";
+	stream << "loopdivend\n";
+	stream << "\tCMP r2, 0\n";
+	stream << "\tJP_Z divend\n";
+	stream << "\tMOVE -1, R0\n";
+	stream << "\tXOR r5, r0, r5\n";
+	stream << "\tADD r5, 1, r5\n";
+	stream << "divend\n";
+	stream << "\tRET\n";
+
+	stream << "funcmod\n";
+	stream << "\tLOAD r1, (r6+4)\n";
+	stream << "\tLOAD r0, (r6+8)\n";
+	stream << "loopmod\n";
+	stream << "\tSUB r0, r1, r0\n";
+	stream << "\tCMP r0, 0\n";
+	stream << "\tJP_NN loopmod\n";
+	stream << "\tADD r0, r1, r0\n";
+	stream << "modend\n";
+	stream << "\tMOVE r0, r5\n";
+	stream << "\tRET\n";
 
     m_root -> generateCode(stream);
 }

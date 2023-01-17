@@ -389,6 +389,54 @@ void MultiplicativeExpression::check() {
     }
 }
 
+void MultiplicativeExpression::generateCode(std::ostream &stream) {
+	if(checkChildren<NodeType::MultiplicativeExpression, NodeType::LeafMult, NodeType::CastExpression>()){
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r1\n";
+		stream << "\tPOP r0\n";
+		stream << "\tPUSH r6\n";
+		stream << "\tPUSH r0\n";
+		stream << "\tPUSH r1\n";
+		stream << "\tSUB SP, 4, R6\n";
+		stream << "\tCALL funcmul\n";
+
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r6\n";
+		stream << "\tPUSH r5\n";
+	} else if(checkChildren<NodeType::MultiplicativeExpression, NodeType::LeafDiv, NodeType::CastExpression>()) {
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r1\n";
+		stream << "\tPOP r0\n";
+		stream << "\tPUSH r6\n";
+		stream << "\tPUSH r0\n";
+		stream << "\tPUSH r1\n";
+		stream << "\tSUB SP, 4, R6\n";
+		stream << "\tCALL funcdiv\n";
+
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r6\n";
+		stream << "\tPUSH r5\n";
+	} else if(checkChildren<NodeType::MultiplicativeExpression, NodeType::LeafMod, NodeType::CastExpression>()) {
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r1\n";
+		stream << "\tPOP r0\n";
+		stream << "\tPUSH r6\n";
+		stream << "\tPUSH r0\n";
+		stream << "\tPUSH r1\n";
+		stream << "\tSUB SP, 4, R6\n";
+		stream << "\tCALL funcmod\n";
+
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r6\n";
+		stream << "\tPUSH r5\n";
+    } else {
+       Msaga::allChildrenGenerateCode(stream, this);
+    }
+}
+
 void CastExpression::check(){
     if(checkChildren<NodeType::UnaryExpression>()) {
         UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[0].get());
