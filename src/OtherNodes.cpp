@@ -36,6 +36,36 @@ void TypeSpecifier::check() {
 
 void UnaryOperator::check() {}
 
+void UnaryOperator::generateCode(std::ostream &stream) {
+	if(checkChildren<NodeType::LeafPlus>()){
+		Msaga::allChildrenGenerateCode(stream, this);
+	} else if(checkChildren<NodeType::LeafMinus>()) {
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r5\n";
+		stream << "\tMOVE -1, R0\n";
+		stream << "\tXOR r5, r0, r5\n";
+		stream << "\tADD r5, 1, r5\n";
+		stream << "\tPUSH r5\n";
+	} else if(checkChildren<NodeType::LeafTilde>()) {
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r5\n";
+		stream << "\tMOVE -1, R0\n";
+		stream << "\tXOR r5, r0, r5\n";
+		stream << "\tPUSH r5\n";
+	} else if(checkChildren<NodeType::LeafNeg>()){
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r0\n";
+		stream << "\tMOVE 0, r5\n";
+		stream << "\tCMP r0, 0\n";
+		stream << "\tJP_NZ unaryoperj\n";
+		stream << "\tMOVE 1, r5\n";
+		stream << "unaryoperj\n";
+		stream << "\tPUSH r5\n";
+	} else {
+		Msaga::allChildrenGenerateCode(stream, this);
+	}
+}
+
 void ArgumentList::check() {
     if(checkChildren<NodeType::AssignmentExpression>()) {
         AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[0].get());

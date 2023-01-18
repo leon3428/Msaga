@@ -301,6 +301,7 @@ void EqualsExpression::check() {
     }
 }
 
+
 void ComparisonExpression::check() {
     if(checkChildren<NodeType::AdditiveExpression>()) {
         AdditiveExpression *addExpr = static_cast<AdditiveExpression*>(m_children[0].get());
@@ -494,6 +495,25 @@ void UnaryExpression::check() {
     } else {
         m_errorHandler();
     }
+}
+
+void UnaryExpression::generateCode(std::ostream &stream) {
+	if(checkChildren<NodeType::UnaryOperator, NodeType::CastExpression>()){
+		this -> getChild(1) -> generateCode(stream);
+		this -> getChild(0) -> generateCode(stream);
+	} else if(checkChildren<NodeType::LeafInc, NodeType::UnaryExpression>()) {
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r5\n";
+		stream << "\tADD r5, 1, r5\n";
+		stream << "\tPUSH r5\n";
+	} else if(checkChildren<NodeType::LeafDec, NodeType::UnaryExpression>()) {
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << "\tPOP r5\n";
+		stream << "\tSUB r5, 1, r5\n";
+		stream << "\tPUSH r5\n";
+	} else{
+		Msaga::allChildrenGenerateCode(stream, this);
+	}
 }
 
 void PostfixExpression::check() {

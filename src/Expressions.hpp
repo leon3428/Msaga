@@ -206,7 +206,8 @@ public:
 class UnaryExpression : public GenericExpression {
 public:
     void check() override;
-
+	void generateCode(std::ostream &stream) override;
+	
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::UnaryExpression; }
 };
 
