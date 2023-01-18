@@ -2,11 +2,11 @@
 
 static int maxId = 0;
 
-Identifier::Identifier(ExprType type, bool isDefined, const Msaga::FunctionType *ft)
-    : exprType(type), defined(isDefined), functionType(ft), id(maxId++), offset(0) {}
+Identifier::Identifier(ExprType type, bool isDefined, const Msaga::FunctionType *ft, int off)
+    : exprType(type), defined(isDefined), functionType(ft), id(maxId++), offset(off) {}
 
 ContextNode::ContextNode(ContextNode *parent)
-    : m_parent(parent) {}
+    : m_parent(parent), m_maxOffset(4) {}
 
 Identifier* ContextNode::getIdentifier(const std::string &name) {
     if(inLocalScope(name))

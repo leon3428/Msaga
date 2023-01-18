@@ -61,6 +61,7 @@ protected:
     int m_characterArrayLength;
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline bool isCharacterArray() const { return m_characterArrayLength >= 0; }
     [[nodiscard]] inline size_t getCharacterArrayLength() const { return m_characterArrayLength; }
@@ -117,6 +118,7 @@ public:
 class BitwiseOrExpression : public GenericExpression {
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BitwiseOrExpression; }
 };
@@ -128,6 +130,7 @@ public:
 class BitwiseXorExpression : public GenericExpression {
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BitwiseXorExpression; }
 };
@@ -139,6 +142,7 @@ public:
 class BitwiseAndExpression : public GenericExpression {
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BitwiseAndExpression; }
 };
@@ -172,7 +176,8 @@ public:
 class AdditiveExpression : public GenericExpression {
 public:
     void check() override;
-
+	void generateCode(std::ostream &stream) override;
+    
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::AdditiveExpression; }
 };
 

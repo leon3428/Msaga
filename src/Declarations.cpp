@@ -80,7 +80,9 @@ void FunctionDefinition::generateCode(std::ostream &stream) {
 	{
 		LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
 		stream << "func" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
+		stream << '\t' << "SUB SP, 0" << std::hex << m_localContext -> getMaxOffset() - 4 << ", SP\n";
 		Msaga::allChildrenGenerateCode(stream, this);
+		stream << '\t' << "ADD SP, 0" << std::hex << m_localContext -> getMaxOffset() - 4 << ", SP\n";
 		stream << '\t' << "RET\n";
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
 	   NodeType::ParameterList, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
@@ -220,6 +222,25 @@ void InitDeclarator::check() {
 	}
 }
 
+void InitDeclarator::generateCode(std::ostream &stream) {
+	if(checkChildren<NodeType::DirectDeclarator, NodeType::LeafAssignment, NodeType::Initializer>()) {
+		m_children[2] -> generateCode(stream);
+
+		DirectDeclarator *dd = static_cast<DirectDeclarator*>(m_children[0].get());
+		if(dd -> getChildrenCnt() == 1) {
+			stream << '\t' << "POP R0\n";
+			LeafIdn *lIdn = static_cast<LeafIdn*>(dd -> getChild(0));
+			auto idn = m_localContext -> getIdentifier(lIdn -> getLexicalUnit());
+			stream << '\t' << "STORE R0, (R6-0" << std::hex << idn -> offset << ")\n";
+		} else {
+			//array
+		}
+
+	} else{
+		Msaga::allChildrenGenerateCode(stream, this);
+	}
+}
+
 void DirectDeclarator::check() {
 	if(checkChildren<NodeType::LeafIdn>()) {
 		if(m_ntype == ExprType::Void)
@@ -246,7 +267,7 @@ void DirectDeclarator::check() {
 
 		m_elementCnt = cnt;
 		m_exprType = Msaga::baseTypeToArray(m_ntype);
-		m_localContext -> declareVariable(idn -> getLexicalUnit(), m_exprType);
+		m_localContext -> declareArrayVariable(idn -> getLexicalUnit(), m_exprType, cnt);
 
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::LeafKwVoid, NodeType::LeafRightBracket>()) {
 		LeafIdn *idnLeaf = static_cast<LeafIdn *>(m_children[0].get());

@@ -158,7 +158,7 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
     stream << '\t' << "MOVE 40000, R7\n";
 
     auto idn = m_root -> getLocalContextNode() -> getIdentifier("main");
-    stream << '\t' << "PUSH R6\n";
+    stream << '\t' << "SUB SP, 4, R6\n";
     stream << '\t' << "CALL func" << idn -> id << '\n';
     stream << '\t' << "POP R6\n";
     stream << '\t' << "MOVE R5, R6\n";
@@ -247,6 +247,8 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
 	stream << "modend\n";
 	stream << "\tMOVE r0, r5\n";
 	stream << "\tRET\n";
+
+    
 
     m_root -> generateCode(stream);
 }

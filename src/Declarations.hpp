@@ -102,6 +102,7 @@ private:
 
 public:
     void check() override;
+	void generateCode(std::ostream &stream) override;
 
 	inline void setNtype(ExprType ntype) { m_ntype = ntype; }
 	[[nodiscard]] inline ExprType getNtype() const { return m_ntype; }

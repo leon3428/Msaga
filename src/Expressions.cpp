@@ -63,7 +63,7 @@ void PrimaryExpression::generateCode(std::ostream &stream) {
         LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
         auto idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
 
-        stream << '\t' << "LOAD R0, (R6 + 0" << std::hex << idn -> offset << ")\n";
+        stream << '\t' << "LOAD R0, (R6-0" << std::hex << idn -> offset << ")\n";
         stream << '\t' << "PUSH R0\n";
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
@@ -134,6 +134,22 @@ void AssignmentExpression::check() {
         m_isLValue = false;
     } else {
         m_errorHandler();
+    }
+}
+
+void AssignmentExpression::generateCode(std::ostream &stream) {
+    if (checkChildren<NodeType::PostfixExpression, NodeType::LeafAssignment, NodeType::AssignmentExpression>()){
+        m_children[2] -> generateCode(stream);
+		stream << '\t' << "LOAD R0, (SP)\n";
+
+		PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
+		if(pExpr -> getChildrenCnt() == 1) {
+			stream << '\t' << "STORE R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+		} else {
+			//array
+		}
+    } else {
+        Msaga::allChildrenGenerateCode(stream, this);
     }
 }
 
@@ -218,6 +234,18 @@ void BitwiseOrExpression::check() {
     }
 }
 
+void BitwiseOrExpression::generateCode(std::ostream &stream) {
+    if(checkChildren<NodeType::BitwiseOrExpression, NodeType::LeafBitOr, NodeType::BitwiseXorExpression>()) {
+        Msaga::allChildrenGenerateCode(stream, this);
+        stream << '\t' << "POP R0\n";
+        stream << '\t' << "POP R1\n";
+        stream << '\t' << "OR R0, R1, R0\n";
+        stream << '\t' << "PUSH R0\n";
+    } else {
+        Msaga::allChildrenGenerateCode(stream, this);
+    }
+}
+
 void BitwiseXorExpression::check() {
     if(checkChildren<NodeType::BitwiseAndExpression>()) {
         BitwiseAndExpression *bandExpr = static_cast<BitwiseAndExpression*>(m_children[0].get());
@@ -245,6 +273,18 @@ void BitwiseXorExpression::check() {
     }
 }
 
+void BitwiseXorExpression::generateCode(std::ostream &stream) {
+    if(checkChildren<NodeType::BitwiseXorExpression, NodeType::LeafBitXor, NodeType::BitwiseAndExpression>()) {
+        Msaga::allChildrenGenerateCode(stream, this);
+        stream << '\t' << "POP R0\n";
+        stream << '\t' << "POP R1\n";
+        stream << '\t' << "XOR R0, R1, R0\n";
+        stream << '\t' << "PUSH R0\n";
+    } else {
+        Msaga::allChildrenGenerateCode(stream, this);
+    }
+}
+
 void BitwiseAndExpression::check() {
     if(checkChildren<NodeType::EqualsExpression>()) {
         EqualsExpression *eqExpr = static_cast<EqualsExpression*>(m_children[0].get());
@@ -269,6 +309,18 @@ void BitwiseAndExpression::check() {
         m_idn = nullptr;
     } else {
         m_errorHandler();
+    }
+}
+
+void BitwiseAndExpression::generateCode(std::ostream &stream) {
+    if(checkChildren<NodeType::BitwiseAndExpression, NodeType::LeafBitAnd, NodeType::EqualsExpression>()) {
+        Msaga::allChildrenGenerateCode(stream, this);
+        stream << '\t' << "POP R0\n";
+        stream << '\t' << "POP R1\n";
+        stream << '\t' << "AND R0, R1, R0\n";
+        stream << '\t' << "PUSH R0\n";
+    } else {
+        Msaga::allChildrenGenerateCode(stream, this);
     }
 }
 
@@ -358,6 +410,24 @@ void AdditiveExpression::check() {
         m_idn = nullptr;
     } else {
         m_errorHandler();
+    }
+}
+
+void AdditiveExpression::generateCode(std::ostream &stream) {
+    if(checkChildren<NodeType::AdditiveExpression, NodeType::LeafPlus, NodeType::MultiplicativeExpression>()) {
+        Msaga::allChildrenGenerateCode(stream, this);
+        stream << '\t' << "POP R0\n";
+        stream << '\t' << "POP R1\n";
+        stream << '\t' << "ADD R0, R1, R0\n";
+        stream << '\t' << "PUSH R0\n";
+    } else if (checkChildren<NodeType::AdditiveExpression, NodeType::LeafMinus, NodeType::MultiplicativeExpression>()) {
+        Msaga::allChildrenGenerateCode(stream, this);
+        stream << '\t' << "POP R0\n";
+        stream << '\t' << "POP R1\n";
+        stream << '\t' << "SUB R1, R0, R0\n";
+        stream << '\t' << "PUSH R0\n";
+    } else {
+        Msaga::allChildrenGenerateCode(stream, this);
     }
 }
 
@@ -604,13 +674,14 @@ void PostfixExpression::generateCode(std::ostream &stream) {
             // array variable
             stream << '\t' << "POP R0\n"; //index
             stream << '\t' << "ADD FP, R0, R0\n"; 
-            stream << '\t' << "LOAD R0, (R0 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+            stream << '\t' << "LOAD R0, (R0 - 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
             stream << '\t' << "PUSH R0\n";
         }
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::LeafRightBracket>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
 
         stream << '\t' << "PUSH R6\n";
+        stream << '\t' << "SUB SP, 4, R6\n";
         stream << '\t' << "CALL func"  <<  pExpr -> getIdentifier() -> id << '\n';
         stream << '\t' << "POP R6\n";
         stream << '\t' << "PUSH R5\n";
@@ -620,6 +691,7 @@ void PostfixExpression::generateCode(std::ostream &stream) {
 
         stream << '\t' << "PUSH R6\n";
         aList -> generateCode(stream);
+        stream << '\t' << "SUB SP, 4, R6\n";
         stream << '\t' << "CALL func" << pExpr -> getIdentifier() -> id << '\n';
         for(size_t i = 0; i< aList -> getSize(); i++)
             stream << '\t' << "POP R0\n";
@@ -627,16 +699,16 @@ void PostfixExpression::generateCode(std::ostream &stream) {
         stream << '\t' << "PUSH R5\n";
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafInc>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        stream << '\t' << "LOAD R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        stream << '\t' << "LOAD R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
         stream << '\t' << "PUSH R0\n";
         stream << '\t' << "ADD R0, 1, R0\n";
-        stream << '\t' << "STORE R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        stream << '\t' << "STORE R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafDec>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        stream << '\t' << "LOAD R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        stream << '\t' << "LOAD R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
         stream << '\t' << "PUSH R0\n";
         stream << '\t' << "ADD R0, -1, R0\n";
-        stream << '\t' << "STORE R0, (R6 + 0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        stream << '\t' << "STORE R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
     } else {
         Msaga::allChildrenGenerateCode(stream, this);
     }

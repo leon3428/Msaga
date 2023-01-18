@@ -52,6 +52,15 @@ void ExpressionCommand::check() {
     }
 }
 
+void ExpressionCommand::generateCode(std::ostream& stream) {
+	if (checkChildren<NodeType::Expression, NodeType::LeafSemicolon>()) {
+		Msaga::allChildrenGenerateCode(stream, this);
+		stream << '\t' << "POP R0\n";
+	} else {
+		Msaga::allChildrenGenerateCode(stream, this);
+    }
+}
+
 void BranchCommand::check() {
 	if(checkChildren<NodeType::LeafKwIf, NodeType::LeafLeftBracket, NodeType::Expression, NodeType::LeafRightBracket, NodeType::Command>()) {
         Expression *exp = static_cast<Expression *>(m_children[2].get());

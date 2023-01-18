@@ -55,6 +55,7 @@ public:
 class ExpressionCommand : public GenericCommand {
 public:
     void check() override;
+    void generateCode(std::ostream& stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ExpressionCommand; }
 };
