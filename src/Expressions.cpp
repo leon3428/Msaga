@@ -150,8 +150,6 @@ void AssignmentExpression::check() {
 
 void AssignmentExpression::generateCode(std::ostream &stream) {
     if (checkChildren<NodeType::PostfixExpression, NodeType::LeafAssignment, NodeType::AssignmentExpression>()){
-        
-
 		PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
 		if(pExpr -> getChildrenCnt() == 1) {
             m_children[2] -> generateCode(stream);
@@ -186,6 +184,11 @@ void LogicalOrExpression::check() {
         LogicalOrExpression *lorExpr = static_cast<LogicalOrExpression*>(m_children[0].get());
         LogicalAndExpression *landExpr = static_cast<LogicalAndExpression*>(m_children[2].get());
 
+		std::string label = getLabel();
+		if(label == "")
+			label = "LogOrJump";
+
+		lorExpr -> setLabel(label);
         lorExpr -> check();
         if(!Msaga::implicitlyConvertible(lorExpr -> getExprType(), ExprType::Int))
             m_errorHandler();
@@ -201,6 +204,40 @@ void LogicalOrExpression::check() {
     }
 }
 
+void LogicalOrExpression::generateCode(std::ostream &stream) {
+	std::string label = getLabel();
+	if(checkChildren<NodeType::LogicalAndExpression>()){
+		//stream << "LABELICA JE OOVO SAD TU " << label << "\n";
+		Msaga::allChildrenGenerateCode(stream, this);
+		
+	} else if(checkChildren<NodeType::LogicalOrExpression, NodeType::LeafLogOr, NodeType::LogicalAndExpression>()) {
+		LogicalOrExpression *lorExpr = static_cast<LogicalOrExpression*>(m_children[0].get());
+		lorExpr -> generateCode(stream);
+
+		stream << "\tPOP r0\n";
+		stream << "\tPUSH r0\n";
+		stream << "\tCMP r0, 0\n";
+		if(label != "")
+			stream << "\tJP_NZ " << label << "\n";
+		else
+			stream << "\tJP_NZ " << lorExpr -> getLabel() << "\n";
+	
+		getChild(2) -> generateCode(stream);
+
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r1\n";
+		stream << "\tOR r0, r1, r0\n";
+		stream << "\tPUSH r0\n";
+
+		if(label == ""){
+			stream << lorExpr -> getLabel() << "\n";
+		}
+
+	} else {
+		Msaga::allChildrenGenerateCode(stream, this);
+	}
+}
+
 void LogicalAndExpression::check() {
     if(checkChildren<NodeType::BitwiseOrExpression>()) {
         BitwiseOrExpression *borExpr = static_cast<BitwiseOrExpression*>(m_children[0].get());
@@ -213,6 +250,11 @@ void LogicalAndExpression::check() {
         LogicalAndExpression *landExpr = static_cast<LogicalAndExpression*>(m_children[0].get());
         BitwiseOrExpression *borExpr = static_cast<BitwiseOrExpression*>(m_children[2].get());
 
+		std::string label = getLabel();
+		if(label == "")
+			label = "LogAndJump";
+
+		landExpr -> setLabel(label);
         landExpr -> check();
         if(!Msaga::implicitlyConvertible(landExpr -> getExprType(), ExprType::Int))
             m_errorHandler();
@@ -226,6 +268,40 @@ void LogicalAndExpression::check() {
     } else {
         m_errorHandler();
     }
+}
+
+void LogicalAndExpression::generateCode(std::ostream &stream) {
+	std::string label = getLabel();
+	if(checkChildren<NodeType::BitwiseOrExpression>()){
+		//stream << "LABELICA JE OOVO SAD TU " << label << "\n";
+		Msaga::allChildrenGenerateCode(stream, this);
+		
+	} else if(checkChildren<NodeType::LogicalAndExpression, NodeType::LeafLogAnd, NodeType::BitwiseOrExpression>()) {
+		LogicalAndExpression *landExpr = static_cast<LogicalAndExpression*>(m_children[0].get());
+		landExpr -> generateCode(stream);
+
+		stream << "\tPOP r0\n";
+		stream << "\tPUSH r0\n";
+		stream << "\tCMP r0, 0\n";
+		if(label != "")
+			stream << "\tJP_Z " << label << "\n";
+		else
+			stream << "\tJP_Z " << landExpr -> getLabel() << "\n";
+	
+		getChild(2) -> generateCode(stream);
+
+		stream << "\tPOP r0\n";
+		stream << "\tPOP r1\n";
+		stream << "\tAND r0, r1, r0\n";
+		stream << "\tPUSH r0\n";
+
+		if(label == ""){
+			stream << landExpr -> getLabel() << "\n";
+		}
+
+	} else {
+		Msaga::allChildrenGenerateCode(stream, this);
+	}
 }
 
 void BitwiseOrExpression::check() {
@@ -668,15 +744,17 @@ void UnaryExpression::generateCode(std::ostream &stream) {
 		this -> getChild(1) -> generateCode(stream);
 		this -> getChild(0) -> generateCode(stream);
 	} else if(checkChildren<NodeType::LeafInc, NodeType::UnaryExpression>()) {
-		Msaga::allChildrenGenerateCode(stream, this);
-		stream << "\tPOP r5\n";
-		stream << "\tADD r5, 1, r5\n";
-		stream << "\tPUSH r5\n";
+		UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[1].get());
+        stream << "\tLOAD R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
+        stream << "\tADD R0, 1, R0\n";
+		stream << "\tPUSH R0\n";
+        stream << "\tSTORE R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
 	} else if(checkChildren<NodeType::LeafDec, NodeType::UnaryExpression>()) {
-		Msaga::allChildrenGenerateCode(stream, this);
-		stream << "\tPOP r5\n";
-		stream << "\tSUB r5, 1, r5\n";
-		stream << "\tPUSH r5\n";
+		UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[1].get());
+        stream << "\tLOAD R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
+        stream << "\tSUB R0, 1, R0\n";
+		stream << "\tPUSH R0\n";
+        stream << "\tSTORE R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
 	} else{
 		Msaga::allChildrenGenerateCode(stream, this);
 	}

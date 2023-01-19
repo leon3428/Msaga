@@ -57,9 +57,7 @@ void UnaryOperator::generateCode(std::ostream &stream) {
 		stream << "\tPOP r0\n";
 		stream << "\tMOVE 0, r5\n";
 		stream << "\tCMP r0, 0\n";
-		stream << "\tJP_NZ unaryoperj\n";
-		stream << "\tMOVE 1, r5\n";
-		stream << "unaryoperj\n";
+		stream << "\tCALL_Z unaryoperj\n";
 		stream << "\tPUSH r5\n";
 	} else {
 		Msaga::allChildrenGenerateCode(stream, this);

@@ -84,27 +84,15 @@ loopmod
 modend
 	MOVE r0, r5
 	RET
-func0 	SUB SP, 04, SP
-	MOVE 0a, R0
+func0 	MOVE 05, R0
 	PUSH R0
-	POP R0
-	STORE R0, (R6-04)
-	MOVE 0a, R0
+	MOVE 00, R0
 	PUSH R0
-	MOVE 02, R0
-	PUSH R0
-	POP R0
-	POP R1
-	ADD R0, R1, R0
-	PUSH R0
-	POP R0
-	MOVE 09, R0
-	PUSH R0
-	LOAD R0, (SP)
-	STORE R0, (R6-04)
-	POP R0
-	LOAD R0, (R6-04)
-	PUSH R0
+	POP r0
+	POP r1
+	OR r0, r1, r0
+	PUSH r0
+LogOrJump
 	POP R5
 	ADD SP, 04, SP
 	RET

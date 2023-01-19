@@ -247,7 +247,10 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
 	stream << "modend\n";
 	stream << "\tMOVE r0, r5\n";
 	stream << "\tRET\n";
-
+	
+	stream << "unaryoperj\n";
+	stream << "\tMOVE 1, r5\n";
+	stream << "\tRET\n";
     
 
     m_root -> generateCode(stream);
