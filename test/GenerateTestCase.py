@@ -9,16 +9,13 @@ def main():
 
             source_file_content = source_file.read()
 
-            p1 = subprocess.run(['test/Test2'], input=source_file_content, capture_output=True, text=True)
-            #tmp = p1.stdout.split('\n')
-            #tmp.pop()
-            #tmp = '\n'.join(tmp)
-            #print(tmp)
-            p2 = subprocess.run(['test/analizator/Main'], input=p1.stdout, capture_output=True, text=True)
+            p1 = subprocess.run(['test/Lexer'], input=source_file_content, capture_output=True, text=True)
+            p2 = subprocess.run(['test/yay/Syntax'], input=p1.stdout, capture_output=True, text=True)
+
             if len(p1.stderr) != 0 or len(p2.stderr) != 0:
                 print(p1.stderr, p2.stderr)
 
-            with open(os.path.join(EXAMPLES_DIR, dir, 'test.txt'), 'w') as test_in:
+            with open(os.path.join(EXAMPLES_DIR, dir, 'test.in'), 'w') as test_in:
                 test_in.write(p2.stdout)
 
             # p3 = subprocess.run(['build/src/Msaga'], input=p2.stdout, capture_output=True, text=True)

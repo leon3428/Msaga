@@ -1,3 +1,7 @@
 int main(void) {
-    return 10;
+    int a = 10;
+
+    a = (10 + 2, 9);
+
+    return a;
 }
