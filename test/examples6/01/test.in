@@ -35,7 +35,7 @@
                     <unarni_izraz>
                      <postfiks_izraz>
                       <primarni_izraz>
-                       BROJ 2 2
+                       BROJ 2 10
       TOCKAZAREZ 2 ;
     <lista_naredbi>
      <lista_naredbi>
@@ -45,8 +45,8 @@
          <izraz_pridruzivanja>
           <postfiks_izraz>
            <primarni_izraz>
-            IDN 3 a
-          OP_PRIDRUZI 3 =
+            IDN 4 a
+          OP_PRIDRUZI 4 =
           <izraz_pridruzivanja>
            <log_ili_izraz>
             <log_i_izraz>
@@ -61,11 +61,53 @@
                      <unarni_izraz>
                       <postfiks_izraz>
                        <primarni_izraz>
-                        BROJ 3 3
-        TOCKAZAREZ 3 ;
+                        L_ZAGRADA 4 (
+                        <izraz>
+                         <izraz>
+                          <izraz_pridruzivanja>
+                           <log_ili_izraz>
+                            <log_i_izraz>
+                             <bin_ili_izraz>
+                              <bin_xili_izraz>
+                               <bin_i_izraz>
+                                <jednakosni_izraz>
+                                 <odnosni_izraz>
+                                  <aditivni_izraz>
+                                   <aditivni_izraz>
+                                    <multiplikativni_izraz>
+                                     <cast_izraz>
+                                      <unarni_izraz>
+                                       <postfiks_izraz>
+                                        <primarni_izraz>
+                                         BROJ 4 10
+                                   PLUS 4 +
+                                   <multiplikativni_izraz>
+                                    <cast_izraz>
+                                     <unarni_izraz>
+                                      <postfiks_izraz>
+                                       <primarni_izraz>
+                                        BROJ 4 2
+                         ZAREZ 4 ,
+                         <izraz_pridruzivanja>
+                          <log_ili_izraz>
+                           <log_i_izraz>
+                            <bin_ili_izraz>
+                             <bin_xili_izraz>
+                              <bin_i_izraz>
+                               <jednakosni_izraz>
+                                <odnosni_izraz>
+                                 <aditivni_izraz>
+                                  <multiplikativni_izraz>
+                                   <cast_izraz>
+                                    <unarni_izraz>
+                                     <postfiks_izraz>
+                                      <primarni_izraz>
+                                       BROJ 4 9
+                        D_ZAGRADA 4 )
+        TOCKAZAREZ 4 ;
      <naredba>
       <naredba_skoka>
-       KR_RETURN 4 return
+       KR_RETURN 6 return
        <izraz>
         <izraz_pridruzivanja>
          <log_ili_izraz>
@@ -81,6 +123,6 @@
                    <unarni_izraz>
                     <postfiks_izraz>
                      <primarni_izraz>
-                      IDN 4 a
-       TOCKAZAREZ 4 ;
-    D_VIT_ZAGRADA 5 }
+                      IDN 6 a
+       TOCKAZAREZ 6 ;
+    D_VIT_ZAGRADA 7 }

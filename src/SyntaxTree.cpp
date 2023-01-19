@@ -154,7 +154,7 @@ void SyntaxTree::check() {
 
 
 void SyntaxTree::generateCode(std::ostream &stream) const {
-    stream << "p_start ";
+    stream << "p_start\n";
     stream << '\t' << "MOVE 40000, R7\n";
 
     auto idn = m_root -> getLocalContextNode() -> getIdentifier("main");

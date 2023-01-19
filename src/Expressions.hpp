@@ -48,6 +48,7 @@ public:
 class Expression : public GenericExpression {
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::Expression; }
 };
@@ -154,6 +155,7 @@ public:
 class EqualsExpression : public GenericExpression {
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::EqualsExpression; }
 };
@@ -165,6 +167,7 @@ public:
 class ComparisonExpression : public GenericExpression {
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::ComparisonExpression; }
 };
