@@ -173,7 +173,7 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
     stream << '\t' << "MOVE R5, R6\n";
     stream << '\t' << "HALT\n\n"; 
 
-	stream << "funmul\n";
+	stream << "funcmul\n";
 	stream << "\tLOAD r1, (r6+4)\n";
 	stream << "\tLOAD r0, (r6+8)\n";
 	stream << "\tCMP r0, 0\n";
