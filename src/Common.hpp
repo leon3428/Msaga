@@ -1,5 +1,5 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#ifndef COMMON_H
+#define COMMON_H
 
 #include <string>
 #include <vector>
@@ -93,6 +93,8 @@ namespace Msaga {
     extern std::map<int, int> constants;
     int getConstLabelId(int constant);
 
+    int getTmpLabelId();
+
     inline void writeConstToReg(std::ostream& stream, std::string_view reg, int constant) {
         if(constant > -(1 << 19) && constant < (1 << 19)) {
             stream << '\t' << "MOVE 0" << std::hex << constant << ", " << reg << '\n'; 
@@ -104,4 +106,4 @@ namespace Msaga {
     void allChildrenGenerateCode(std::ostream& stream, SyntaxTreeNode *node);
 }
 
-#endif // GLOBAL_H
+#endif // COMMON_H

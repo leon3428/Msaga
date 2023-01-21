@@ -167,7 +167,7 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
     for(auto [constant, id] : Msaga::constants){
         stream << "const" << id << " DW 0" << std::hex << constant << '\n';
 	}
-	stream << "funcmul\n";
+	stream << "funmul\n";
 	stream << "\tLOAD r1, (r6+4)\n";
 	stream << "\tLOAD r0, (r6+8)\n";
 	stream << "\tCMP r0, 0\n";

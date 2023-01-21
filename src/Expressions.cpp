@@ -452,25 +452,29 @@ void EqualsExpression::check() {
 
 void EqualsExpression::generateCode(std::ostream& stream) {
     if(checkChildren<NodeType::EqualsExpression, NodeType::LeafEq, NodeType::ComparisonExpression>()) {
+        int tmpId = Msaga::getTmpLabelId();
+
         Msaga::allChildrenGenerateCode(stream, this);
         stream << '\t' << "POP R1\n";
         stream << '\t' << "POP R0\n";
         stream << '\t' << "CMP R0, R1\n";
         stream << '\t' << "MOVE 1, R0\n";
-        stream << '\t' << "JP_EQ cp_eqcont\n";
+        stream << '\t' << "JP_EQ tmp" << tmpId << '\n';
         stream << '\t' << "MOVE 0, R0\n";
-        stream << "cp_eqcont\n";
+        stream << "tmp" << tmpId << '\n';
         stream << '\t' << "PUSH R0\n";
 
     } else if( checkChildren<NodeType::EqualsExpression, NodeType::LeafNeq, NodeType::ComparisonExpression>()) {
+        int tmpId = Msaga::getTmpLabelId();
+
         Msaga::allChildrenGenerateCode(stream, this);
         stream << '\t' << "POP R1\n";
         stream << '\t' << "POP R0\n";
         stream << '\t' << "CMP R0, R1\n";
         stream << '\t' << "MOVE 1, R0\n";
-        stream << '\t' << "JP_NE cp_eqcont\n";
+        stream << '\t' << "JP_NE tmp" << tmpId << '\n';
         stream << '\t' << "MOVE 0, R0\n";
-        stream << "cp_eqcont\n";
+        stream << "tmp" << tmpId << '\n';
         stream << '\t' << "PUSH R0\n";
     } else {
         Msaga::allChildrenGenerateCode(stream, this);
@@ -511,44 +515,52 @@ void ComparisonExpression::check() {
 
 void ComparisonExpression::generateCode(std::ostream &stream) {
     if(checkChildren<NodeType::ComparisonExpression, NodeType::LeafLt, NodeType::AdditiveExpression>()) {
+        int tmpId = Msaga::getTmpLabelId();
+
         Msaga::allChildrenGenerateCode(stream, this);
         stream << '\t' << "POP R1\n";
         stream << '\t' << "POP R0\n";
         stream << '\t' << "CMP R0, R1\n";
         stream << '\t' << "MOVE 1, R0\n";
-        stream << '\t' << "JP_SLT cp_eqcont\n";
+        stream << '\t' << "JP_SLT tmp" << tmpId << '\n';
         stream << '\t' << "MOVE 0, R0\n";
-        stream << "cp_eqcont\n";
+        stream << "tmp" << tmpId << '\n';
         stream << '\t' << "PUSH R0\n";
     } else if (checkChildren<NodeType::ComparisonExpression, NodeType::LeafGt, NodeType::AdditiveExpression>()) {
+        int tmpId = Msaga::getTmpLabelId();
+
         Msaga::allChildrenGenerateCode(stream, this);
         stream << '\t' << "POP R1\n";
         stream << '\t' << "POP R0\n";
         stream << '\t' << "CMP R0, R1\n";
         stream << '\t' << "MOVE 1, R0\n";
-        stream << '\t' << "JP_SGT cp_eqcont\n";
+        stream << '\t' << "JP_SGT tmp" << tmpId << '\n';
         stream << '\t' << "MOVE 0, R0\n";
-        stream << "cp_eqcont\n";
+        stream << "tmp" << tmpId << '\n';
         stream << '\t' << "PUSH R0\n";
     } else if (checkChildren<NodeType::ComparisonExpression, NodeType::LeafLte, NodeType::AdditiveExpression>()) {
+        int tmpId = Msaga::getTmpLabelId();
+
         Msaga::allChildrenGenerateCode(stream, this);
         stream << '\t' << "POP R1\n";
         stream << '\t' << "POP R0\n";
         stream << '\t' << "CMP R0, R1\n";
         stream << '\t' << "MOVE 1, R0\n";
-        stream << '\t' << "JP_SLE cp_eqcont\n";
+        stream << '\t' << "JP_SLE tmp" << tmpId << '\n';
         stream << '\t' << "MOVE 0, R0\n";
-        stream << "cp_eqcont\n";
+        stream << "tmp" << tmpId << '\n';
         stream << '\t' << "PUSH R0\n";
     } else if (checkChildren<NodeType::ComparisonExpression, NodeType::LeafGte, NodeType::AdditiveExpression>()) {
+        int tmpId = Msaga::getTmpLabelId();
+
         Msaga::allChildrenGenerateCode(stream, this);
         stream << '\t' << "POP R1\n";
         stream << '\t' << "POP R0\n";
         stream << '\t' << "CMP R0, R1\n";
         stream << '\t' << "MOVE 1, R0\n";
-        stream << '\t' << "JP_SGE cp_eqcont\n";
+        stream << '\t' << "JP_SGE tmp" << tmpId << '\n';
         stream << '\t' << "MOVE 0, R0\n";
-        stream << "cp_eqcont\n";
+        stream << "tmp" << tmpId << '\n';
         stream << '\t' << "PUSH R0\n";
     } else {
         Msaga::allChildrenGenerateCode(stream, this);
@@ -839,22 +851,26 @@ void PostfixExpression::generateCode(std::ostream &stream) {
         
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
         if(pExpr -> getIdentifier() == nullptr) {
+            int tmpId1 = Msaga::getTmpLabelId();
+            int tmpId2 = Msaga::getTmpLabelId();
+            int tmpId3 = Msaga::getTmpLabelId();
+
             // =>* ConstCharacterArray
             m_children[0] -> generateCode(stream);
             m_children[2] -> generateCode(stream);
             stream << '\t' << "POP R0\n"; // index
             stream << '\t' << "MOVE 0, R1\n"; // counter
-            stream << "cp_ccaloop\n";
+            stream << "tmp" << tmpId1 << '\n';
             stream << '\t' << "POP R2\n"; // top element 
             stream << '\t' << "CMP R0, R1\n";
-            stream << '\t' << "JP_NZ cp_ccacont\n";
+            stream << '\t' << "JP_NZ tmp" << tmpId2 << '\n';
             stream << '\t' << "MOVE R2, R3\n";
-            stream << "cp_ccacont\n";
+            stream << "tmp" << tmpId2 << '\n';
             stream << '\t' << "CMP R2, 0\n";
-            stream << '\t' << "JP_Z cp_ccaend\n";
+            stream << '\t' << "JP_Z tmp" << tmpId3 << '\n';
             stream << '\t' << "ADD R1, 1, R1\n";
-            stream << '\t' << "JP cp_ccaloop\n";
-            stream << "cp_ccaend\n";
+            stream << '\t' << "JP tmp" << tmpId1 << '\n';
+            stream << "tmp" << tmpId3;
             stream << '\t' << "PUSH R3\n";
         } else {
             m_children[2] -> generateCode(stream);

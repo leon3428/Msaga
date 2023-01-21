@@ -144,3 +144,9 @@ int Msaga::getConstLabelId(int constant) {
 
     return constants[constant];
 }
+
+static int tempLabelCounter = 0;
+
+int Msaga::getTmpLabelId() {
+    return tempLabelCounter++;
+}
