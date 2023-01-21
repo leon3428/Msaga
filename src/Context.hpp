@@ -34,7 +34,7 @@ public:
 
     [[nodiscard]] inline bool inLocalScope(const std::string &name) const { return m_identifierTable.find(name) != m_identifierTable.end(); }
     [[nodiscard]] Identifier* getIdentifier(const std::string &name);
-    [[nodiscard]] int getOffset(const std::string &name);
+    [[nodiscard]] std::tuple<int,bool> getOffset(const std::string &name);
     [[nodiscard]] inline bool inScope(const std::string &name) { return getIdentifier(name) != nullptr; }
     [[nodiscard]] bool allDefined(ContextNode *globalContext);
     [[nodiscard]] inline ContextNode* getParent() { return m_parent; }

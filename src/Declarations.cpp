@@ -234,7 +234,7 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 			stream << '\t' << "POP R0\n";
 			LeafIdn *lIdn = static_cast<LeafIdn*>(dd -> getChild(0));
 			auto idn = m_localContext -> getIdentifier(lIdn -> getLexicalUnit());
-			Msaga::storeRegToVar(stream, this, "R0", idn -> name, "R6");
+			Msaga::storeRegToVar(stream, this, "R0", idn -> name);
 		} else {
 			Initializer *initializer = static_cast<Initializer*>(m_children[2].get());
 			LeafIdn *lIdn = static_cast<LeafIdn*>(dd -> getChild(0));
@@ -244,7 +244,7 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 				// const char array
 				int tmpId = Msaga::getTmpLabelId();
 
-				stream << '\t' << "MOVE R6, R0\n"; // counter
+				stream << '\t' << "MOVE 0, R0\n"; // counter
 				stream << "tmp" << tmpId << '\n'; // loop start
 				stream << '\t' << "POP R1" << '\n';
 				Msaga::storeRegToVar(stream, this, "R1", idn -> name, "R0");
@@ -257,13 +257,12 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 				int tmpId = Msaga::getTmpLabelId();
 
 				Msaga::writeConstToReg(stream, "R0", jel -> getElementCount() * 4); // counter
-				stream << "\t" << "MOVE 0, R3\n";
+				stream << "\t" << "MOVE 0, R2\n";
 				stream << "tmp" << tmpId << '\n'; // loop start
 				stream << '\t' << "POP R1\n";
-				stream << '\t' << "ADD R6, R3, R2\n";
 				Msaga::storeRegToVar(stream, this, "R1", idn -> name, "R2");
-				stream << '\t' << "ADD R3, 4, R3\n";
-				stream << '\t' << "CMP R3, R0\n";
+				stream << '\t' << "ADD R2, 4, R2\n";
+				stream << '\t' << "CMP R2, R0\n";
 				stream << '\t' << "JP_NE tmp" << tmpId << '\n';
 			}
 		}

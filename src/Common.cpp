@@ -151,14 +151,44 @@ int Msaga::getTmpLabelId() {
     return tempLabelCounter++;
 }
 
-void Msaga::loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view refreg) {
-    int tmp = node -> getLocalContextNode() -> getOffset(name);
-    stream << '\t' << "LOAD " << rd << ", (" << refreg << (tmp > 0 ? '+' : '-') << '0' << std::hex << tmp << ")\n";
+void Msaga::loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view offsetReg) {
+    auto [localOffset, isGlobal] = node -> getLocalContextNode() -> getOffset(name);
+    if(isGlobal) { 
+        if(offsetReg != ""){
+            stream << '\t' << "SUB 040000, " << offsetReg << ", R3\n";
+            stream << '\t' << "LOAD " << rd << ", (R3-0" << std::hex << localOffset << ")\n";
+        } else {
+            stream << '\t' << "LOAD " << rd << ", (" << std::hex << 0x40000 - localOffset << ")\n";
+        }
+    } else {
+        if(offsetReg != "") {
+            stream << '\t' << "ADD R6, " << offsetReg << ", R3\n";
+            stream << '\t' << "LOAD " << rd << ", (R3" << (localOffset > 0 ? '+' : '-') << '0' << std::hex << localOffset << ")\n";
+        } else {
+            stream << '\t' << "LOAD " << rd << ", (R6" << (localOffset > 0 ? '+' : '-') << '0' << std::hex << localOffset << ")\n";
+        }
+        
+    }
 }
 
-void Msaga::storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view refreg) {
-    int tmp = node -> getLocalContextNode() -> getOffset(name);
-    stream << '\t' << "STORE " << rs << ", (" << refreg << (tmp > 0 ? '+' : '-') << '0' << std::hex << tmp << ")\n";
+void Msaga::storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view offsetReg) {
+    auto [localOffset, isGlobal] = node -> getLocalContextNode() -> getOffset(name);
+    if(isGlobal) {
+        if(offsetReg != ""){
+            stream << '\t' << "SUB 040000, " << offsetReg << ", R3\n";
+            stream << '\t' << "STORE " << rs << ", (R3-0" << std::hex << localOffset << ")\n";
+        } else {
+            stream << '\t' << "STORE " << rs << ", (" << std::hex << 0x40000 - localOffset << ")\n";
+        }
+    }
+    else {
+        if(offsetReg != "") {
+            stream << '\t' << "ADD R6, " << offsetReg << ", R3\n";
+            stream << '\t' << "STORE " << rs << ", (R3" << (localOffset > 0 ? '+' : '-') << '0' << std::hex << localOffset << ")\n";
+        } else {
+            stream << '\t' << "STORE " << rs << ", (R6" << (localOffset > 0 ? '+' : '-') << '0' << std::hex << localOffset << ")\n";
+        }
+    }
 }
 
 void Msaga::blockOffsetHelper(ContextNode *node, int& offset) {

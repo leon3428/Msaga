@@ -69,6 +69,9 @@ void SyntaxTree::load(std::istream &stream) {
             SyntaxTreeNode *parent = node_stack.top().node;
             auto p = Msaga::constructInnerNode(ch, parent);
 
+            if(ch == "<deklaracija>" && parent -> getNodeType() == NodeType::ExternalDeclaration)
+                m_global_declarations.push_back(p);
+
             if(ch == "<slozena_naredba>" && parent -> getNodeType() == NodeType::Command) {
                 m_contextNodes.push_back(std::make_unique<ContextNode>(parent -> getLocalContextNode()));
                 parent -> getLocalContextNode() -> addChild(m_contextNodes.back().get());
@@ -152,13 +155,14 @@ void SyntaxTree::check() {
         std::cout << "funkcija" << std::endl;
 }
 
-
-
-
-
 void SyntaxTree::generateCode(std::ostream &stream) const {
+    int globalOffset = m_root -> getLocalContextNode() -> getMaxOffset();
+
     stream << "p_start\n";
-    stream << '\t' << "MOVE 40000, R7\n";
+    stream << '\t' << "MOVE " << std::hex << 0x40000 - globalOffset << ", R7\n";
+
+    for(auto node : m_global_declarations)
+        node -> generateCode(stream);
 
     auto idn = m_root -> getLocalContextNode() -> getIdentifier("main");
     stream << '\t' << "SUB SP, 4, R6\n";
@@ -167,9 +171,6 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
     stream << '\t' << "MOVE R5, R6\n";
     stream << '\t' << "HALT\n\n"; 
 
-    for(auto [constant, id] : Msaga::constants){
-        stream << "const" << id << " DW 0" << std::hex << constant << '\n';
-	}
 	stream << "funmul\n";
 	stream << "\tLOAD r1, (r6+4)\n";
 	stream << "\tLOAD r0, (r6+8)\n";
@@ -257,6 +258,10 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
     
 
     m_root -> generateCode(stream);
+
+    for(auto [constant, id] : Msaga::constants){
+        stream << "const" << id << " DW 0" << std::hex << constant << '\n';
+	}
 }
 
 

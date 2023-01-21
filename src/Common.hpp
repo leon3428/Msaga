@@ -106,8 +106,8 @@ namespace Msaga {
 
     void allChildrenGenerateCode(std::ostream& stream, SyntaxTreeNode *node);
 
-    void loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view refreg);
-    void storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view refreg);
+    void loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view offsetReg = "");
+    void storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view offsetReg = "");
 
     void blockOffsetHelper(ContextNode *node, int& offset);
 

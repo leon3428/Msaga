@@ -16,11 +16,11 @@ Identifier* ContextNode::getIdentifier(const std::string &name) {
     return m_parent -> getIdentifier(name);
 }
 
-[[nodiscard]] int ContextNode::getOffset(const std::string &name) {
+[[nodiscard]] std::tuple<int,bool> ContextNode::getOffset(const std::string &name) {
     if(inLocalScope(name))
-        return m_identifierTable[name].offset + m_blockOffset;
+        return {m_identifierTable[name].offset + m_blockOffset, m_parent == nullptr};
     if(m_parent == nullptr)
-        return 0;
+        return {0, false};
     return m_parent -> getOffset(name);
 }
 

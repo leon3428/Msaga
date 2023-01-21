@@ -64,6 +64,7 @@ class SyntaxTree {
 private:
     std::vector<std::unique_ptr<ContextNode> > m_contextNodes;
     std::unique_ptr<SyntaxTreeNode> m_root;
+    std::vector<SyntaxTreeNode* > m_global_declarations;
 
     void m_printHelper(SyntaxTreeNode *node, int indent_level);
 
