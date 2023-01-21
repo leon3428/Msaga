@@ -184,9 +184,9 @@ void LogicalOrExpression::check() {
         LogicalOrExpression *lorExpr = static_cast<LogicalOrExpression*>(m_children[0].get());
         LogicalAndExpression *landExpr = static_cast<LogicalAndExpression*>(m_children[2].get());
 
-		std::string label = getLabel();
-		if(label == "")
-			label = "LogOrJump";
+		int label = getLabel();
+		if(label == -1)
+			label = Msaga::getTmpLabelId();
 
 		lorExpr -> setLabel(label);
         lorExpr -> check();
@@ -205,9 +205,8 @@ void LogicalOrExpression::check() {
 }
 
 void LogicalOrExpression::generateCode(std::ostream &stream) {
-	std::string label = getLabel();
+	int label = getLabel();
 	if(checkChildren<NodeType::LogicalAndExpression>()){
-		//stream << "LABELICA JE OOVO SAD TU " << label << "\n";
 		Msaga::allChildrenGenerateCode(stream, this);
 		
 	} else if(checkChildren<NodeType::LogicalOrExpression, NodeType::LeafLogOr, NodeType::LogicalAndExpression>()) {
@@ -217,10 +216,10 @@ void LogicalOrExpression::generateCode(std::ostream &stream) {
 		stream << "\tPOP r0\n";
 		stream << "\tPUSH r0\n";
 		stream << "\tCMP r0, 0\n";
-		if(label != "")
-			stream << "\tJP_NZ " << label << "\n";
+		if(label != -1)
+			stream << "\tJP_NZ tmp" << label << "\n";
 		else
-			stream << "\tJP_NZ " << lorExpr -> getLabel() << "\n";
+			stream << "\tJP_NZ tmp" << lorExpr -> getLabel() << "\n";
 	
 		getChild(2) -> generateCode(stream);
 
@@ -229,8 +228,16 @@ void LogicalOrExpression::generateCode(std::ostream &stream) {
 		stream << "\tOR r0, r1, r0\n";
 		stream << "\tPUSH r0\n";
 
-		if(label == ""){
-			stream << lorExpr -> getLabel() << "\n";
+		if(label == -1){
+			stream << "tmp" << lorExpr -> getLabel() << "\n";
+			stream << "\tPOP r0\n";
+			stream << "\tMOVE 0, r5\n";
+			stream << "\tCMP r0, 0\n";
+			int orEnd = Msaga::getTmpLabelId();
+			stream << "\tJP_Z tmp" << orEnd << "\n";
+			stream << "\tMOVE 1, r5\n";
+			stream << "tmp" << orEnd << "\n";
+			stream << "\tPUSH r5\n";
 		}
 
 	} else {
@@ -250,9 +257,9 @@ void LogicalAndExpression::check() {
         LogicalAndExpression *landExpr = static_cast<LogicalAndExpression*>(m_children[0].get());
         BitwiseOrExpression *borExpr = static_cast<BitwiseOrExpression*>(m_children[2].get());
 
-		std::string label = getLabel();
-		if(label == "")
-			label = "LogAndJump";
+		int label = getLabel();
+		if(label == -1)
+			label = Msaga::getTmpLabelId();
 
 		landExpr -> setLabel(label);
         landExpr -> check();
@@ -271,7 +278,7 @@ void LogicalAndExpression::check() {
 }
 
 void LogicalAndExpression::generateCode(std::ostream &stream) {
-	std::string label = getLabel();
+	int label = getLabel();
 	if(checkChildren<NodeType::BitwiseOrExpression>()){
 		//stream << "LABELICA JE OOVO SAD TU " << label << "\n";
 		Msaga::allChildrenGenerateCode(stream, this);
@@ -283,20 +290,42 @@ void LogicalAndExpression::generateCode(std::ostream &stream) {
 		stream << "\tPOP r0\n";
 		stream << "\tPUSH r0\n";
 		stream << "\tCMP r0, 0\n";
-		if(label != "")
-			stream << "\tJP_Z " << label << "\n";
+		if(label != -1)
+			stream << "\tJP_Z tmp" << label << "\n";
 		else
-			stream << "\tJP_Z " << landExpr -> getLabel() << "\n";
+			stream << "\tJP_Z tmp" << landExpr -> getLabel() << "\n";
 	
 		getChild(2) -> generateCode(stream);
 
-		stream << "\tPOP r0\n";
-		stream << "\tPOP r1\n";
+		int tempLabel = Msaga::getTmpLabelId();
+		stream << "\tPOP r5\n";
+		stream << "\tMOVE 0, r0\n";
+		stream << "\tCMP r5, 0\n";
+		stream << "\tJP_Z tmp" << tempLabel << "\n";
+		stream << "\tMOVE 1, r0\n";
+		stream << "tmp" << tempLabel << "\n";
+
+		tempLabel = Msaga::getTmpLabelId();
+		stream << "\tPOP r5\n";
+		stream << "\tMOVE 0, r1\n";
+		stream << "\tCMP r5, 0\n";
+		stream << "\tJP_Z tmp" << tempLabel << "\n";
+		stream << "\tMOVE 1, r1\n";
+		stream << "tmp" << tempLabel << "\n";
+
 		stream << "\tAND r0, r1, r0\n";
 		stream << "\tPUSH r0\n";
 
-		if(label == ""){
-			stream << landExpr -> getLabel() << "\n";
+		if(label == -1){
+			stream << "tmp" << landExpr -> getLabel() << "\n";
+			stream << "\tPOP r0\n";
+			stream << "\tMOVE 0, r5\n";
+			stream << "\tCMP r0, 0\n";
+			int andEnd = Msaga::getTmpLabelId();
+			stream << "\tJP_Z tmp" << andEnd << "\n";
+			stream << "\tMOVE 1, r5\n";
+			stream << "tmp" << andEnd << "\n";
+			stream << "\tPUSH r5\n";
 		}
 
 	} else {

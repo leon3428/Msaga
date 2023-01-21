@@ -75,14 +75,14 @@ public:
  * 
  */
 class LogicalOrExpression : public GenericExpression {
-	std::string m_label = "";
+	int m_label = -1;
 public:
     void check() override;
 
 	void generateCode(std::ostream &stream) override;
 
-	void setLabel(std::string label) { m_label = label; }
-	std::string getLabel(){ return m_label; }
+	void setLabel(int label) { m_label = label; }
+	int getLabel(){ return m_label; }
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LogicalOrExpression; }
 };
@@ -92,14 +92,14 @@ public:
  * 
  */
 class LogicalAndExpression : public GenericExpression {
-	std::string m_label = "";
+	int m_label = -1;
 public:
     void check() override;
 
 	void generateCode(std::ostream &stream) override;
 
-	void setLabel(std::string label) { m_label = label; }
-	std::string getLabel(){ return m_label; }
+	void setLabel(int label) { m_label = label; }
+	int getLabel(){ return m_label; }
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LogicalAndExpression; }
 };
