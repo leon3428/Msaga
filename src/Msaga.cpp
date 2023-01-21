@@ -7,7 +7,7 @@ int main() {
     std::ofstream outputStream("out.asm");
 
     SyntaxTree st;
-    st.load(inputStream);
+    st.load(std::cin);
     st.check();
     st.generateCode(outputStream);
 

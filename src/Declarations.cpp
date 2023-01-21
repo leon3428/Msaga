@@ -63,9 +63,6 @@ void FunctionDefinition::check() {
 			idn -> defined = true;
 		} else {
 			m_localContext -> getParent() -> declareFunction(lIdn -> getLexicalUnit(), true, {pl -> getTypes(), tn -> getExprType()});
-			for(size_t i = 0;i < pl -> getSize();i++) {
-				m_localContext -> declareVariable(pl -> getName(i), pl -> getType(i));
-			}
 		}
 		m_children[5] -> check();
 
@@ -88,7 +85,10 @@ void FunctionDefinition::generateCode(std::ostream &stream) {
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
 	   NodeType::ParameterList, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
 	{
-
+		LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
+		stream << "func" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
+		stream << '\t' << "SUB SP, 0" << std::hex << localVarSpace << ", SP\n";
+		Msaga::allChildrenGenerateCode(stream, this);
 	} else {
 		Msaga::allChildrenGenerateCode(stream, this);
 	}
@@ -131,6 +131,8 @@ void ParameterDeclaration::check() {
 
 		m_exprType = tn -> getExprType();
 		m_name = idn -> getLexicalUnit();
+
+		m_localContext -> declareParameter(m_name, m_exprType);
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftSquareBracket, NodeType::LeafRightSquareBracket>()) {
 		TypeName *tn = static_cast<TypeName *>(m_children[0].get());
 		tn -> check();
@@ -141,6 +143,7 @@ void ParameterDeclaration::check() {
 
 		m_exprType = Msaga::baseTypeToArray(tn -> getExprType());
 		m_name = idn -> getLexicalUnit();
+		m_localContext -> declareParameter(m_name, m_exprType);
 	} else{
 		m_errorHandler();
 	}

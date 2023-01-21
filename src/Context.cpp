@@ -6,7 +6,7 @@ Identifier::Identifier(ExprType type, bool isDefined, const Msaga::FunctionType 
     : exprType(type), defined(isDefined), functionType(ft), id(maxId++), offset(off), name(n) {}
 
 ContextNode::ContextNode(ContextNode *parent)
-    : m_parent(parent), m_maxOffset(4) {}
+    : m_parent(parent), m_maxOffset(4), m_minOffset(-4) {}
 
 Identifier* ContextNode::getIdentifier(const std::string &name) {
     if(inLocalScope(name))
@@ -17,8 +17,13 @@ Identifier* ContextNode::getIdentifier(const std::string &name) {
 }
 
 [[nodiscard]] std::tuple<int,bool> ContextNode::getOffset(const std::string &name) {
-    if(inLocalScope(name))
-        return {m_identifierTable[name].offset + m_blockOffset, m_parent == nullptr};
+    if(inLocalScope(name)){
+        int offset = m_identifierTable[name].offset;
+        if(offset > 0)
+            offset += m_blockOffset;
+        return {offset, m_parent == nullptr};
+    }
+        
     if(m_parent == nullptr)
         return {0, false};
     return m_parent -> getOffset(name);

@@ -26,6 +26,7 @@ private:
     std::vector<std::unique_ptr<Msaga::FunctionType> > m_functionTypes;
     std::vector<ContextNode*> m_children;
     int m_maxOffset = 4;
+    int m_minOffset = -4;
     int m_blockOffset;
 
 public:
@@ -44,6 +45,11 @@ public:
     [[nodiscard]] inline ContextNode* getChild(size_t i) { return m_children[i]; }
     inline void addChild(ContextNode *child) { m_children.push_back(child); }
     inline void setBlockOffset(int blockOffset) { m_blockOffset = blockOffset; }
+
+    inline void declareParameter(const std::string &name, ExprType exprType) {
+        m_identifierTable[name] = {exprType, true, nullptr, m_minOffset, name};
+        m_minOffset -= 4;
+    }
 
     inline void declareVariable(const std::string &name, ExprType exprType) {
         m_identifierTable[name] = {exprType, true, nullptr, m_maxOffset, name};

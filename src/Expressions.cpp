@@ -163,8 +163,7 @@ void AssignmentExpression::generateCode(std::ostream &stream) {
             m_children[2] -> generateCode(stream); // value to assign
 		    stream << '\t' << "LOAD R0, (SP)\n";
 
-            stream << '\t' << "ADD R6, R1, R1\n"; 
-            Msaga::storeRegToVar(stream, this, "R0", pExpr2 -> getIdentifier() -> name);
+            Msaga::storeRegToVar(stream, this, "R0", pExpr2 -> getIdentifier() -> name, "R1");
 		}
     } else {
         Msaga::allChildrenGenerateCode(stream, this);

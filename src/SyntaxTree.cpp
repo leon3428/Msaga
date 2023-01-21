@@ -71,6 +71,8 @@ void SyntaxTree::load(std::istream &stream) {
 
             if(ch == "<deklaracija>" && parent -> getNodeType() == NodeType::ExternalDeclaration)
                 m_global_declarations.push_back(p);
+            if(ch == "<definicija_funkcije>")
+                m_function_definitions.push_back(p);
 
             if(ch == "<slozena_naredba>" && parent -> getNodeType() == NodeType::Command) {
                 m_contextNodes.push_back(std::make_unique<ContextNode>(parent -> getLocalContextNode()));
@@ -255,10 +257,12 @@ void SyntaxTree::generateCode(std::ostream &stream) const {
 	stream << "unaryoperj\n";
 	stream << "\tMOVE 1, r5\n";
 	stream << "\tRET\n";
+
+
+
+    for(auto node : m_function_definitions)
+        node -> generateCode(stream);
     
-
-    m_root -> generateCode(stream);
-
     for(auto [constant, id] : Msaga::constants){
         stream << "const" << id << " DW 0" << std::hex << constant << '\n';
 	}

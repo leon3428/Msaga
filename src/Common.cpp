@@ -153,20 +153,26 @@ int Msaga::getTmpLabelId() {
 
 void Msaga::loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view offsetReg) {
     auto [localOffset, isGlobal] = node -> getLocalContextNode() -> getOffset(name);
+    char sign = '-';
+    if(localOffset < 0) {
+        localOffset *= -1;
+        sign = '+';
+    }
+    
     if(isGlobal) { 
         if(offsetReg != ""){
             stream << '\t' << "MOVE 040000, R3\n";
-            stream << '\t' << "SUB R3, " << offsetReg << ", R3\n";
-            stream << '\t' << "LOAD " << rd << ", (R3" << (localOffset > 0 ? '-' : '+') << "0" << std::hex << localOffset << ")\n";
+            stream << '\t' << "ADD R3, " << offsetReg << ", R3\n";
+            stream << '\t' << "LOAD " << rd << ", (R3" << sign << "0" << std::hex << localOffset << ")\n";
         } else {
             stream << '\t' << "LOAD " << rd << ", (" << std::hex << 0x40000 - localOffset << ")\n";
         }
     } else {
         if(offsetReg != "") {
             stream << '\t' << "ADD R6, " << offsetReg << ", R3\n";
-            stream << '\t' << "LOAD " << rd << ", (R3" << (localOffset > 0 ? '-' : '+') << '0' << std::hex << localOffset << ")\n";
+            stream << '\t' << "LOAD " << rd << ", (R3" << sign << '0' << std::hex << localOffset << ")\n";
         } else {
-            stream << '\t' << "LOAD " << rd << ", (R6" << (localOffset > 0 ? '-' : '+') << '0' << std::hex << localOffset << ")\n";
+            stream << '\t' << "LOAD " << rd << ", (R6" << sign << '0' << std::hex << localOffset << ")\n";
         }
         
     }
@@ -174,11 +180,17 @@ void Msaga::loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string
 
 void Msaga::storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view offsetReg) {
     auto [localOffset, isGlobal] = node -> getLocalContextNode() -> getOffset(name);
+    char sign = '-';
+    if(localOffset < 0) {
+        localOffset *= -1;
+        sign = '+';
+    }
+
     if(isGlobal) {
         if(offsetReg != ""){
             stream << '\t' << "MOVE 040000, R3\n";
-            stream << '\t' << "SUB R3, " << offsetReg << ", R3\n";
-            stream << '\t' << "STORE " << rs << ", (R3" << (localOffset > 0 ? '-' : '+') << "0" << std::hex << localOffset << ")\n";
+            stream << '\t' << "ADD R3, " << offsetReg << ", R3\n";
+            stream << '\t' << "STORE " << rs << ", (R3" << sign << "0" << std::hex << localOffset << ")\n";
         } else {
             stream << '\t' << "STORE " << rs << ", (" << std::hex << 0x40000 - localOffset << ")\n";
         }
@@ -186,9 +198,9 @@ void Msaga::storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::strin
     else {
         if(offsetReg != "") {
             stream << '\t' << "ADD R6, " << offsetReg << ", R3\n";
-            stream << '\t' << "STORE " << rs << ", (R3" << (localOffset > 0 ? '-' : '+') << '0' << std::hex << localOffset << ")\n";
+            stream << '\t' << "STORE " << rs << ", (R3" << sign << '0' << std::hex << localOffset << ")\n";
         } else {
-            stream << '\t' << "STORE " << rs << ", (R6" << (localOffset > 0 ? '-' : '+') << '0' << std::hex << localOffset << ")\n";
+            stream << '\t' << "STORE " << rs << ", (R6" << sign << '0' << std::hex << localOffset << ")\n";
         }
     }
 }
