@@ -75,14 +75,17 @@ void FunctionDefinition::check() {
 }
 
 void FunctionDefinition::generateCode(std::ostream &stream) {
+	int localVarSpace = 0;
+	Msaga::blockOffsetHelper(m_localContext, localVarSpace);
+
 	if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
 	   NodeType::LeafKwVoid, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
 	{
 		LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
 		stream << "func" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
-		stream << '\t' << "SUB SP, 0" << std::hex << m_localContext -> getMaxOffset() - 4 << ", SP\n";
+		stream << '\t' << "SUB SP, 0" << std::hex << localVarSpace << ", SP\n";
 		Msaga::allChildrenGenerateCode(stream, this);
-		stream << '\t' << "ADD SP, 0" << std::hex << m_localContext -> getMaxOffset() - 4 << ", SP\n";
+		stream << '\t' << "ADD SP, 0" << std::hex << localVarSpace << ", SP\n";
 		stream << '\t' << "RET\n";
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
 	   NodeType::ParameterList, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
@@ -231,7 +234,7 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 			stream << '\t' << "POP R0\n";
 			LeafIdn *lIdn = static_cast<LeafIdn*>(dd -> getChild(0));
 			auto idn = m_localContext -> getIdentifier(lIdn -> getLexicalUnit());
-			stream << '\t' << "STORE R0, (R6-0" << std::hex << idn -> offset << ")\n";
+			Msaga::storeRegToVar(stream, this, "R0", idn -> name, "R6");
 		} else {
 			Initializer *initializer = static_cast<Initializer*>(m_children[2].get());
 			LeafIdn *lIdn = static_cast<LeafIdn*>(dd -> getChild(0));
@@ -244,7 +247,7 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 				stream << '\t' << "MOVE R6, R0\n"; // counter
 				stream << "tmp" << tmpId << '\n'; // loop start
 				stream << '\t' << "POP R1" << '\n';
-            	stream << '\t' << "STORE R1, (R0-0" << std::hex << idn -> offset << ")\n";
+				Msaga::storeRegToVar(stream, this, "R1", idn -> name, "R0");
 				stream << '\t' << "ADD R0, 4, R0\n";
 				stream << '\t' << "CMP R1, 0\n";
 				stream << '\t' << "JP_NE tmp" << tmpId << '\n';
@@ -258,7 +261,7 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 				stream << "tmp" << tmpId << '\n'; // loop start
 				stream << '\t' << "POP R1\n";
 				stream << '\t' << "ADD R6, R3, R2\n";
-				stream << '\t' << "STORE R1, (R2-0" << std::hex << idn -> offset << ")\n"; 
+				Msaga::storeRegToVar(stream, this, "R1", idn -> name, "R2");
 				stream << '\t' << "ADD R3, 4, R3\n";
 				stream << '\t' << "CMP R3, R0\n";
 				stream << '\t' << "JP_NE tmp" << tmpId << '\n';

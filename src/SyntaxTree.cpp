@@ -71,9 +71,11 @@ void SyntaxTree::load(std::istream &stream) {
 
             if(ch == "<slozena_naredba>" && parent -> getNodeType() == NodeType::Command) {
                 m_contextNodes.push_back(std::make_unique<ContextNode>(parent -> getLocalContextNode()));
+                parent -> getLocalContextNode() -> addChild(m_contextNodes.back().get());
                 p -> setLocalContextNode(m_contextNodes.back().get());
             } else if(ch == "<definicija_funkcije>") {
                 m_contextNodes.push_back(std::make_unique<ContextNode>(parent -> getLocalContextNode()));
+                parent -> getLocalContextNode() -> addChild(m_contextNodes.back().get());
                 p -> setLocalContextNode(m_contextNodes.back().get());
             } else {
                 p -> setLocalContextNode(parent -> getLocalContextNode());
@@ -149,6 +151,9 @@ void SyntaxTree::check() {
     if(!allDefined)
         std::cout << "funkcija" << std::endl;
 }
+
+
+
 
 
 void SyntaxTree::generateCode(std::ostream &stream) const {

@@ -61,9 +61,8 @@ void PrimaryExpression::check() {
 void PrimaryExpression::generateCode(std::ostream &stream) {
     if(checkChildren<NodeType::LeafIdn>()) {
         LeafIdn *l = static_cast<LeafIdn *>(m_children[0].get());
-        auto idn = m_localContext -> getIdentifier(l -> getLexicalUnit());
 
-        stream << '\t' << "LOAD R0, (R6-0" << std::hex << idn -> offset << ")\n";
+        Msaga::loadVarToReg(stream, this, "R0", l -> getLexicalUnit(), "R6");
         stream << '\t' << "PUSH R0\n";
     } else if(checkChildren<NodeType::LeafNum>()) {
         LeafNum *l = static_cast<LeafNum *>(m_children[0].get());
@@ -154,7 +153,7 @@ void AssignmentExpression::generateCode(std::ostream &stream) {
 		if(pExpr -> getChildrenCnt() == 1) {
             m_children[2] -> generateCode(stream);
 		    stream << '\t' << "LOAD R0, (SP)\n";
-			stream << '\t' << "STORE R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+            Msaga::storeRegToVar(stream, this, "R0", pExpr -> getIdentifier() -> name, "R6");
 		} else {
             PostfixExpression *pExpr2 = static_cast<PostfixExpression*>(pExpr -> getChild(0));
 			pExpr -> getChild(2) -> generateCode(stream); // get index on stack
@@ -165,7 +164,7 @@ void AssignmentExpression::generateCode(std::ostream &stream) {
 		    stream << '\t' << "LOAD R0, (SP)\n";
 
             stream << '\t' << "ADD R6, R1, R1\n"; 
-            stream << '\t' << "STORE R0, (R1-0" << std::hex << pExpr2 -> getIdentifier() -> offset << ")\n";
+            Msaga::storeRegToVar(stream, this, "R0", pExpr2 -> getIdentifier() -> name, "R1");
 		}
     } else {
         Msaga::allChildrenGenerateCode(stream, this);
@@ -786,16 +785,16 @@ void UnaryExpression::generateCode(std::ostream &stream) {
 		this -> getChild(0) -> generateCode(stream);
 	} else if(checkChildren<NodeType::LeafInc, NodeType::UnaryExpression>()) {
 		UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[1].get());
-        stream << "\tLOAD R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::loadVarToReg(stream, this, "R0", uExpr -> getIdentifier() -> name, "R6");
         stream << "\tADD R0, 1, R0\n";
 		stream << "\tPUSH R0\n";
-        stream << "\tSTORE R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::storeRegToVar(stream, this, "R0", uExpr -> getIdentifier() -> name, "R6");
 	} else if(checkChildren<NodeType::LeafDec, NodeType::UnaryExpression>()) {
 		UnaryExpression *uExpr = static_cast<UnaryExpression*>(m_children[1].get());
-        stream << "\tLOAD R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::loadVarToReg(stream, this, "R0", uExpr -> getIdentifier() -> name, "R6");
         stream << "\tSUB R0, 1, R0\n";
 		stream << "\tPUSH R0\n";
-        stream << "\tSTORE R0, (R6-0" << std::hex << uExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::storeRegToVar(stream, this, "R0", uExpr -> getIdentifier() -> name, "R6");
 	} else{
 		Msaga::allChildrenGenerateCode(stream, this);
 	}
@@ -907,7 +906,7 @@ void PostfixExpression::generateCode(std::ostream &stream) {
             stream << '\t' << "POP R0\n"; //index
             stream << '\t' << "SHL R0, 2, R0\n";
             stream << '\t' << "ADD R6, R0, R0\n"; 
-            stream << '\t' << "LOAD R0, (R0-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+            Msaga::loadVarToReg(stream, this, "R0", pExpr -> getIdentifier() -> name, "R0");
             stream << '\t' << "PUSH R0\n";
         }
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafLeftBracket, NodeType::LeafRightBracket>()) {
@@ -932,16 +931,16 @@ void PostfixExpression::generateCode(std::ostream &stream) {
         stream << '\t' << "PUSH R5\n";
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafInc>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        stream << '\t' << "LOAD R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::loadVarToReg(stream, this, "R0", pExpr -> getIdentifier() -> name, "R6");
         stream << '\t' << "PUSH R0\n";
         stream << '\t' << "ADD R0, 1, R0\n";
-        stream << '\t' << "STORE R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::storeRegToVar(stream, this, "R0", pExpr -> getIdentifier() -> name, "R6");
     } else if(checkChildren<NodeType::PostfixExpression, NodeType::LeafDec>()) {
         PostfixExpression *pExpr = static_cast<PostfixExpression*>(m_children[0].get());
-        stream << '\t' << "LOAD R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::loadVarToReg(stream, this, "R0", pExpr -> getIdentifier() -> name, "R6");
         stream << '\t' << "PUSH R0\n";
         stream << '\t' << "ADD R0, -1, R0\n";
-        stream << '\t' << "STORE R0, (R6-0" << std::hex << pExpr -> getIdentifier() -> offset << ")\n";
+        Msaga::storeRegToVar(stream, this, "R0", pExpr -> getIdentifier() -> name, "R6");
     } else {
         Msaga::allChildrenGenerateCode(stream, this);
     }

@@ -150,3 +150,22 @@ static int tempLabelCounter = 0;
 int Msaga::getTmpLabelId() {
     return tempLabelCounter++;
 }
+
+void Msaga::loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view refreg) {
+    int tmp = node -> getLocalContextNode() -> getOffset(name);
+    stream << '\t' << "LOAD " << rd << ", (" << refreg << (tmp > 0 ? '+' : '-') << '0' << std::hex << tmp << ")\n";
+}
+
+void Msaga::storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view refreg) {
+    int tmp = node -> getLocalContextNode() -> getOffset(name);
+    stream << '\t' << "STORE " << rs << ", (" << refreg << (tmp > 0 ? '+' : '-') << '0' << std::hex << tmp << ")\n";
+}
+
+void Msaga::blockOffsetHelper(ContextNode *node, int& offset) {
+    node -> setBlockOffset(offset);
+    offset += node -> getMaxOffset() - 4;
+
+    for(int i = 0;i < node -> getChildrenCnt();i++) {
+        Msaga::blockOffsetHelper(node -> getChild(i), offset);
+    }
+}

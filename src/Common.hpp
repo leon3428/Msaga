@@ -48,6 +48,7 @@ enum class ExprType : int8_t {
 };
 
 class SyntaxTreeNode;
+class ContextNode;
 
 namespace Msaga {
     
@@ -104,6 +105,12 @@ namespace Msaga {
     }
 
     void allChildrenGenerateCode(std::ostream& stream, SyntaxTreeNode *node);
+
+    void loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view refreg);
+    void storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view refreg);
+
+    void blockOffsetHelper(ContextNode *node, int& offset);
+
 }
 
 #endif // COMMON_H
