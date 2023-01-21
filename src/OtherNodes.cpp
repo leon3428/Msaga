@@ -83,3 +83,15 @@ void ArgumentList::check() {
         m_errorHandler();
     }
 }
+
+void ArgumentList::generateCode(std::ostream &stream) {
+	if(checkChildren<NodeType::ArgumentList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
+		ArgumentList *al = static_cast<ArgumentList*>(m_children[0].get());
+        AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[2].get());
+
+		aExpr -> generateCode(stream);
+		al -> generateCode(stream);
+	} else{
+		Msaga::allChildrenGenerateCode(stream, this);
+	}
+}

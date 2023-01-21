@@ -60,6 +60,7 @@ protected:
     std::vector<ExprType> m_exprTypes;
 public:
     void check() override;
+	void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline std::vector<ExprType> getExprTypes() const { return m_exprTypes; }
     [[nodiscard]] inline size_t getSize() const { return m_exprTypes.size(); }
