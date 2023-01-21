@@ -85,8 +85,6 @@ void FunctionDefinition::generateCode(std::ostream &stream) {
 		stream << "func" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
 		stream << '\t' << "SUB SP, 0" << std::hex << localVarSpace << ", SP\n";
 		Msaga::allChildrenGenerateCode(stream, this);
-		stream << '\t' << "ADD SP, 0" << std::hex << localVarSpace << ", SP\n";
-		stream << '\t' << "RET\n";
 	} else if(checkChildren<NodeType::TypeName, NodeType::LeafIdn, NodeType::LeafLeftBracket,
 	   NodeType::ParameterList, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
 	{
