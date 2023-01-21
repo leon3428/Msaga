@@ -27,8 +27,8 @@ void SyntaxTreeNode::generateCode(std::ostream& stream) {
     Msaga::allChildrenGenerateCode(stream, this);
 }
 
-StackItem::StackItem(SyntaxTreeNode *n, int indLevel, bool inLoop, ExprType funRetType, int charArrayLen)
-    : node(n), indentLevel(indLevel), insideLoop(inLoop), functionReturnType(funRetType), characterArrayLength(charArrayLen) {}
+StackItem::StackItem(SyntaxTreeNode *n, int indLevel, SyntaxTreeNode *mLoop, ExprType funRetType, int charArrayLen)
+    : node(n), indentLevel(indLevel), myLoop(mLoop), functionReturnType(funRetType), characterArrayLength(charArrayLen) {}
 
 void SyntaxTree::load(std::istream &stream) {
     std::stack<StackItem> node_stack;
@@ -38,7 +38,7 @@ void SyntaxTree::load(std::istream &stream) {
     m_root = std::make_unique<TranslationUnit>();
     m_contextNodes.push_back(std::make_unique<ContextNode>(nullptr));
     m_root -> setLocalContextNode(m_contextNodes.back().get());
-    node_stack.push({m_root.get(), 0, false, ExprType::Error, -1});
+    node_stack.push({m_root.get(), 0, nullptr, ExprType::Error, -1});
 
     while(getline(stream, line)) {
         int indent_level = 0;
@@ -69,8 +69,6 @@ void SyntaxTree::load(std::istream &stream) {
             SyntaxTreeNode *parent = node_stack.top().node;
             auto p = Msaga::constructInnerNode(ch, parent);
 
-
-
             if(ch == "<slozena_naredba>" && parent -> getNodeType() == NodeType::Command) {
                 m_contextNodes.push_back(std::make_unique<ContextNode>(parent -> getLocalContextNode()));
                 p -> setLocalContextNode(m_contextNodes.back().get());
@@ -81,9 +79,9 @@ void SyntaxTree::load(std::istream &stream) {
                 p -> setLocalContextNode(parent -> getLocalContextNode());
             }
 
-            bool inside_loop = node_stack.top().insideLoop;
+            SyntaxTreeNode *my_loop = node_stack.top().myLoop;
             if(ch == "<naredba_petlje>")
-                inside_loop = true;
+                my_loop = p;
 
             ExprType function_ret_type = node_stack.top().functionReturnType;
             if(ch == "<slozena_naredba>" && parent -> getNodeType() == NodeType::FunctionDefinition) {
@@ -94,11 +92,11 @@ void SyntaxTree::load(std::istream &stream) {
 
             if(ch == "<naredba_skoka>") {
                 JumpCommand *jc = static_cast<JumpCommand*>(p);
-                jc -> setInsideLoop(inside_loop);
+                jc -> setMyLoop(my_loop);
                 jc -> setFunctionReturnType(function_ret_type);
             }
 
-            node_stack.push({p, indent_level, inside_loop, function_ret_type, -1});
+            node_stack.push({p, indent_level, my_loop, function_ret_type, -1});
         } else {
             // leaf
             std::string ch, lexicalUnit;
@@ -115,10 +113,10 @@ void SyntaxTree::load(std::istream &stream) {
 
 
 void SyntaxTree::m_printHelper(SyntaxTreeNode *node, int indent_level) {
-    std:: cout << std::string(indent_level, '-') << Msaga::NodeTypeToString(node -> getNodeType()) << ' ' << node -> getLocalContextNode() << '\n';
+    std:: cout << std::string(indent_level, '-') << Msaga::NodeTypeToString(node -> getNodeType()) << ' ' << node << ' ' << node -> getLocalContextNode() << '\n';
     if(node -> getNodeType() == NodeType::JumpCommand) {
         JumpCommand *jc = static_cast<JumpCommand*>(node);
-        std::cout << jc -> isInsideLoop() << ' ' << Msaga::exprTypeToString(jc -> getFunctionReturnType()) << '\n';
+        std::cout << jc -> getMyLoop() << ' ' << Msaga::exprTypeToString(jc -> getFunctionReturnType()) << '\n';
     }
 
     if(node -> getNodeType() == NodeType::AssignmentExpression) {

@@ -157,7 +157,8 @@ private:
 	std::vector<ExprType> m_types;
 public:
     void check() override;
-	
+	void generateCode(std::ostream &stream) override;
+
 	[[nodiscard]] inline std::vector<ExprType> getTypes() const { return m_types; }
 	[[nodiscard]] inline ExprType getType(int i) const { return m_types[i]; }
 	[[nodiscard]] inline int getElementCount() const { return m_types.size(); }

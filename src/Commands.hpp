@@ -67,6 +67,7 @@ public:
 class BranchCommand : public GenericCommand {
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::BranchCommand; }
 };
@@ -76,10 +77,18 @@ public:
  * 
  */
 class LoopCommand : public GenericCommand {
+protected:
+    int m_loopStartTmpId;
+    int m_loopEndTmpId;
+    int m_loopContinueTmpId;
 public:
     void check() override;
+    void generateCode(std::ostream &stream) override;
 
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::LoopCommand; }
+    [[nodiscard]] inline int getLoopEndTmpId() const { return m_loopEndTmpId; }
+    [[nodiscard]] inline int getLoopStartTmpId() const { return m_loopStartTmpId; }
+    [[nodiscard]] inline int getLoopContinueTmpId() const { return m_loopContinueTmpId; }
 };
 
 /**
@@ -89,13 +98,13 @@ public:
 class JumpCommand : public GenericCommand {
 private:
 	ExprType m_functionReturnType = ExprType::Error; 
-	bool m_insideLoop = false;
+	SyntaxTreeNode *m_loop = nullptr;
 
 public:
 	JumpCommand() = default;
 	inline void setFunctionReturnType(ExprType functionReturnType) { m_functionReturnType = functionReturnType; }
-	inline void setInsideLoop(bool insideLoop) { m_insideLoop = insideLoop; }
-	[[nodiscard]] inline bool isInsideLoop() const { return m_insideLoop; }
+	inline void setMyLoop(SyntaxTreeNode *loop) { m_loop = loop; }
+	[[nodiscard]] inline SyntaxTreeNode* getMyLoop() const { return m_loop; }
     void check() override;
     void generateCode(std::ostream &stream) override;
 

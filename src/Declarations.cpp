@@ -233,7 +233,36 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 			auto idn = m_localContext -> getIdentifier(lIdn -> getLexicalUnit());
 			stream << '\t' << "STORE R0, (R6-0" << std::hex << idn -> offset << ")\n";
 		} else {
-			//array
+			Initializer *initializer = static_cast<Initializer*>(m_children[2].get());
+			LeafIdn *lIdn = static_cast<LeafIdn*>(dd -> getChild(0));
+			auto idn = m_localContext -> getIdentifier(lIdn -> getLexicalUnit());
+			
+			if(initializer -> getChildrenCnt() == 1) {
+				// const char array
+				int tmpId = Msaga::getTmpLabelId();
+
+				stream << '\t' << "MOVE R6, R0\n"; // counter
+				stream << "tmp" << tmpId << '\n'; // loop start
+				stream << '\t' << "POP R1" << '\n';
+            	stream << '\t' << "STORE R1, (R0-0" << std::hex << idn -> offset << ")\n";
+				stream << '\t' << "ADD R0, 4, R0\n";
+				stream << '\t' << "CMP R1, 0\n";
+				stream << '\t' << "JP_NE tmp" << tmpId << '\n';
+			} else {
+				// initializer list
+				JoinExpressionList *jel = static_cast<JoinExpressionList*>(initializer -> getChild(1));
+				int tmpId = Msaga::getTmpLabelId();
+
+				Msaga::writeConstToReg(stream, "R0", jel -> getElementCount() * 4); // counter
+				stream << "\t" << "MOVE 0, R3\n";
+				stream << "tmp" << tmpId << '\n'; // loop start
+				stream << '\t' << "POP R1\n";
+				stream << '\t' << "ADD R6, R3, R2\n";
+				stream << '\t' << "STORE R1, (R2-0" << std::hex << idn -> offset << ")\n"; 
+				stream << '\t' << "ADD R3, 4, R3\n";
+				stream << '\t' << "CMP R3, R0\n";
+				stream << '\t' << "JP_NE tmp" << tmpId << '\n';
+			}
 		}
 
 	} else{
@@ -341,5 +370,15 @@ void JoinExpressionList::check() {
 	}
 	else {
 		m_errorHandler();
+	}
+}
+
+void JoinExpressionList::generateCode(std::ostream &stream) {
+	if(checkChildren<NodeType::JoinExpressionList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
+		m_children[2] -> generateCode(stream);
+		m_children[0] -> generateCode(stream);
+	}
+	else {
+		Msaga::allChildrenGenerateCode(stream, this);
 	}
 }

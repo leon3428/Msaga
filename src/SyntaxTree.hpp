@@ -53,11 +53,11 @@ public:
 struct StackItem {
     SyntaxTreeNode *node;
     int indentLevel;
-    bool insideLoop;
+    SyntaxTreeNode *myLoop;
     ExprType functionReturnType;
     int characterArrayLength;
 
-    StackItem(SyntaxTreeNode *n, int indLevel, bool inLoop, ExprType funRetType, int charArrayLen);
+    StackItem(SyntaxTreeNode *n, int indLevel, SyntaxTreeNode *mLoop, ExprType funRetType, int charArrayLen);
 };
 
 class SyntaxTree {
