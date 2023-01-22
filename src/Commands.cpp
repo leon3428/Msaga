@@ -233,6 +233,9 @@ void JumpCommand::generateCode(std::ostream &stream) {
 	} else if(checkChildren<NodeType::LeafKwBreak, NodeType::LeafSemicolon>()) {
 		LoopCommand *lc = static_cast<LoopCommand*>(m_loop);
 		stream << '\t' << "JP tmp" << lc -> getLoopEndTmpId() << '\n';
+	} else if(checkChildren<NodeType::LeafKwReturn, NodeType::LeafSemicolon>()) {
+		stream << '\t' << "MOVE R6, SP\n";
+		stream << '\t' << "RET\n";
 	} else if(checkChildren<NodeType::LeafKwReturn, NodeType::Expression, NodeType::LeafSemicolon>()) {
 		m_children[1] -> generateCode(stream);
 		stream << '\t' << "POP R5\n";

@@ -118,6 +118,7 @@ private:
 	ExprType m_exprType;
 	ExprType m_ntype;
 	int m_elementCnt;
+	Identifier *m_idn;
 
 public:
     void check() override;
@@ -127,6 +128,8 @@ public:
 	[[nodiscard]] inline ExprType getNtype() const { return m_ntype; }
 	[[nodiscard]] inline ExprType getExprType() const { return m_exprType; }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::DirectDeclarator; }
+	[[nodiscard]] inline Identifier* getIdentifier() const { return m_idn; }
+	inline void setIdentifier(Identifier *idn) { m_idn = idn; }
 };
 
 /**
@@ -137,7 +140,7 @@ class Initializer : public SyntaxTreeNode {
 private:
 	std::vector<ExprType> m_types;
 	bool m_reducesToCharArray;
-
+	Identifier *m_idn;
 public:
     void check() override;
     
@@ -146,6 +149,8 @@ public:
 	[[nodiscard]] inline int getElementCount() const { return m_types.size(); }
 	[[nodiscard]] inline NodeType getNodeType() const override { return NodeType::Initializer; }
 	[[nodiscard]] inline bool reducesToCharArray() const { return m_reducesToCharArray; }
+	[[nodiscard]] inline Identifier* getIdentifier() const { return m_idn; }
+	inline void setIdentifier(Identifier *idn) { m_idn = idn; }
 };
 
 /**
@@ -155,6 +160,7 @@ public:
 class JoinExpressionList : public SyntaxTreeNode {
 private:
 	std::vector<ExprType> m_types;
+	Identifier *m_idn;
 public:
     void check() override;
 	void generateCode(std::ostream &stream) override;
@@ -163,6 +169,9 @@ public:
 	[[nodiscard]] inline ExprType getType(int i) const { return m_types[i]; }
 	[[nodiscard]] inline int getElementCount() const { return m_types.size(); }
     [[nodiscard]] inline NodeType getNodeType() const override { return NodeType::JoinExpressionList; }
+	[[nodiscard]] inline Identifier* getIdentifier() const { return m_idn; }
+	inline void setIdentifier(Identifier *idn) { m_idn = idn; }
+
 };
 
 #endif //DECLARATIONS_H

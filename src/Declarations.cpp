@@ -86,9 +86,12 @@ void FunctionDefinition::generateCode(std::ostream &stream) {
 	   NodeType::ParameterList, NodeType::LeafRightBracket, NodeType::ComplexCommand>())
 	{
 		LeafIdn *l = static_cast<LeafIdn*>(m_children[1].get());
-		stream << "func" << m_localContext -> getIdentifier(l -> getLexicalUnit()) -> id << ' '; 
+		auto idn = m_localContext -> getParent() -> getIdentifier(l -> getLexicalUnit());
+		stream << "func" << idn -> id << '\n'; 
 		stream << '\t' << "SUB SP, 0" << std::hex << localVarSpace << ", SP\n";
 		Msaga::allChildrenGenerateCode(stream, this);
+		stream << '\t' << "MOVE R6, SP\n";
+		stream << '\t' << "RET\n";
 	} else {
 		Msaga::allChildrenGenerateCode(stream, this);
 	}
@@ -204,6 +207,7 @@ void InitDeclarator::check() {
 		decl -> check();
 
 		Initializer *init = static_cast<Initializer *>(m_children[2].get());
+		init -> setIdentifier(decl -> getIdentifier());
 		init -> check();
 
 		if(Msaga::isConst(decl -> getExprType()) || Msaga::isNumber(decl -> getExprType())) {
@@ -253,18 +257,7 @@ void InitDeclarator::generateCode(std::ostream &stream) {
 				stream << '\t' << "CMP R1, 0\n";
 				stream << '\t' << "JP_NE tmp" << tmpId << '\n';
 			} else {
-				// initializer list
-				JoinExpressionList *jel = static_cast<JoinExpressionList*>(initializer -> getChild(1));
-				int tmpId = Msaga::getTmpLabelId();
-
-				Msaga::writeConstToReg(stream, "R0", jel -> getElementCount() * 4); // counter
-				stream << "\t" << "MOVE 0, R2\n";
-				stream << "tmp" << tmpId << '\n'; // loop start
-				stream << '\t' << "POP R1\n";
-				Msaga::storeRegToVar(stream, this, "R1", idn -> name, "R2");
-				stream << '\t' << "ADD R2, 4, R2\n";
-				stream << '\t' << "CMP R2, R0\n";
-				stream << '\t' << "JP_NE tmp" << tmpId << '\n';
+				initializer -> getChild(1) -> generateCode(stream);
 			}
 		}
 
@@ -283,8 +276,8 @@ void DirectDeclarator::check() {
 			m_errorHandler();
 		
 		m_exprType = m_ntype;
-
 		m_localContext -> declareVariable(idn -> getLexicalUnit(), m_exprType);
+		m_idn = m_localContext -> getIdentifier(idn -> getLexicalUnit());
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftSquareBracket, NodeType::LeafNum, NodeType::LeafRightSquareBracket>()) {
 		if(m_ntype == ExprType::Void)
 			m_errorHandler();
@@ -300,7 +293,7 @@ void DirectDeclarator::check() {
 		m_elementCnt = cnt;
 		m_exprType = Msaga::baseTypeToArray(m_ntype);
 		m_localContext -> declareArrayVariable(idn -> getLexicalUnit(), m_exprType, cnt);
-
+		m_idn = m_localContext -> getIdentifier(idn -> getLexicalUnit());
 	} else if(checkChildren<NodeType::LeafIdn, NodeType::LeafLeftBracket, NodeType::LeafKwVoid, NodeType::LeafRightBracket>()) {
 		LeafIdn *idnLeaf = static_cast<LeafIdn *>(m_children[0].get());
 		if(m_localContext -> inLocalScope(idnLeaf -> getLexicalUnit())) {
@@ -347,6 +340,7 @@ void Initializer::check() {
 	} else if(checkChildren<NodeType::LeafLeftCurlyBracket, NodeType::JoinExpressionList, NodeType::LeafRightCurlyBracket>()) {
 		m_reducesToCharArray = true;
 		JoinExpressionList *list = static_cast<JoinExpressionList *>(m_children[1].get());
+		list -> setIdentifier(m_idn);
 		list -> check();
 
 		m_types = list -> getTypes();
@@ -364,6 +358,7 @@ void JoinExpressionList::check() {
 		m_types = {expr -> getExprType()};
 	} else if(checkChildren<NodeType::JoinExpressionList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
 		JoinExpressionList *list = static_cast<JoinExpressionList *>(m_children[0].get());
+		list -> setIdentifier(m_idn);
 		list -> check();
 		AssignmentExpression *expr = static_cast<AssignmentExpression *>(m_children[2].get());
 		expr -> check();
@@ -377,9 +372,26 @@ void JoinExpressionList::check() {
 }
 
 void JoinExpressionList::generateCode(std::ostream &stream) {
-	if(checkChildren<NodeType::JoinExpressionList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
+	/*if(checkChildren<NodeType::JoinExpressionList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
 		m_children[2] -> generateCode(stream);
 		m_children[0] -> generateCode(stream);
+	}
+	else {
+		Msaga::allChildrenGenerateCode(stream, this);
+	}*/
+
+	if(checkChildren<NodeType::AssignmentExpression>()) {
+		m_children[0] -> generateCode(stream);
+		stream << '\t' << "POP R0\n"; // value
+		Msaga::writeConstToReg(stream, "R1", (m_types.size() - 1) * 4);
+		Msaga::storeRegToVar(stream, this, "R0", m_idn -> name, "R1");
+	} else if(checkChildren<NodeType::JoinExpressionList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
+		m_children[0] -> generateCode(stream);
+
+		m_children[2] -> generateCode(stream);
+		stream << '\t' << "POP R0\n"; // value
+		Msaga::writeConstToReg(stream, "R1", (m_types.size() - 1) * 4);
+		Msaga::storeRegToVar(stream, this, "R0", m_idn -> name, "R1");
 	}
 	else {
 		Msaga::allChildrenGenerateCode(stream, this);

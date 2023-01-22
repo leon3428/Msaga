@@ -30,7 +30,7 @@ Identifier* ContextNode::getIdentifier(const std::string &name) {
 }
 
 bool ContextNode::allDefined(ContextNode *globalContext) {
-    for(auto const& [name, identifier] : m_identifierTable) {
+    for(auto& [name, identifier] : m_identifierTable) {
         if(identifier.defined || identifier.exprType != ExprType::Function)
             continue;
 
@@ -41,6 +41,8 @@ bool ContextNode::allDefined(ContextNode *globalContext) {
             return false;
         if(global_idn -> functionType -> argumentsTypes != identifier.functionType -> argumentsTypes)
             return false;
+        
+        identifier.id = global_idn -> id;
     }
     return true;
 }

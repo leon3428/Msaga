@@ -85,12 +85,46 @@ void ArgumentList::check() {
 }
 
 void ArgumentList::generateCode(std::ostream &stream) {
-	if(checkChildren<NodeType::ArgumentList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
-		ArgumentList *al = static_cast<ArgumentList*>(m_children[0].get());
+     if(checkChildren<NodeType::AssignmentExpression>()) {
+        AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[0].get());
+
+        auto idn = aExpr -> getIdentifier();
+        if(idn != nullptr && Msaga::isArrayType(idn -> exprType)) {
+            auto [localOffset, isGlobal] = m_localContext-> getOffset(aExpr -> getIdentifier() -> name);
+            if(isGlobal) {
+                stream << '\t' << "MOVE "<< std::hex << 0x40000 - localOffset << ", R0\n";
+                stream << '\t' << "PUSH R0\n";
+            } else if(localOffset > 0) {
+                stream << '\t' << "SUB R6, 0" << std::hex << localOffset << ", R0\n";
+                stream << '\t' << "PUSH R0\n";
+            } else {
+                stream << '\t' << "LOAD R0, (R6+0" << std::hex << localOffset * -1 << ")\n";
+                stream << '\t' << "PUSH R0\n";
+            }
+           
+        } else {
+            m_children[0] -> generateCode(stream);
+        }
+    } else if(checkChildren<NodeType::ArgumentList, NodeType::LeafComma, NodeType::AssignmentExpression>()) {
         AssignmentExpression *aExpr = static_cast<AssignmentExpression*>(m_children[2].get());
 
-		aExpr -> generateCode(stream);
-		al -> generateCode(stream);
+        auto idn = aExpr -> getIdentifier();
+        if(idn != nullptr && Msaga::isArrayType(idn -> exprType)) {
+            auto [localOffset, isGlobal] = m_localContext-> getOffset(aExpr -> getIdentifier() -> name);
+            if(isGlobal) {
+                stream << '\t' << "MOVE "<< std::hex << 0x40000 - localOffset << ", R0\n";
+                stream << '\t' << "PUSH R0\n";
+            } else if(localOffset > 0) {
+                stream << '\t' << "SUB R6, 0" << std::hex << localOffset << ", R0\n";
+                stream << '\t' << "PUSH R0\n";
+            } else {
+                stream << '\t' << "LOAD R0, (R6+0" << std::hex << localOffset * -1 << ")\n";
+                stream << '\t' << "PUSH R0\n";
+            }
+        } else {
+            m_children[2] -> generateCode(stream);
+        }
+		m_children[0] -> generateCode(stream);
 	} else{
 		Msaga::allChildrenGenerateCode(stream, this);
 	}

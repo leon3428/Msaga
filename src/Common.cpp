@@ -153,6 +153,15 @@ int Msaga::getTmpLabelId() {
 
 void Msaga::loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string_view rd, const std::string &name, std::string_view offsetReg) {
     auto [localOffset, isGlobal] = node -> getLocalContextNode() -> getOffset(name);
+    auto exprType = node -> getLocalContextNode() -> getIdentifier(name) -> exprType;
+
+    if(localOffset < 0 && Msaga::isArrayType(exprType)) {
+        stream << '\t' << "LOAD R3, (R6+0" << localOffset * -1 << ")\n"; // load pointer to reg
+        stream << '\t' << "ADD R3, " << offsetReg << ", R3\n";
+        stream << '\t' << "LOAD " << rd << ", (R3)\n";
+        return;
+    }
+
     char sign = '-';
     if(localOffset < 0) {
         localOffset *= -1;
@@ -180,6 +189,15 @@ void Msaga::loadVarToReg(std::ostream& stream, SyntaxTreeNode *node, std::string
 
 void Msaga::storeRegToVar(std::ostream& stream, SyntaxTreeNode *node, std::string_view rs, const std::string &name, std::string_view offsetReg) {
     auto [localOffset, isGlobal] = node -> getLocalContextNode() -> getOffset(name);
+    auto exprType = node -> getLocalContextNode() -> getIdentifier(name) -> exprType;
+
+    if(localOffset < 0 && Msaga::isArrayType(exprType)) {
+        stream << '\t' << "LOAD R3, (R6+0" << localOffset * -1 << ")\n"; // load pointer to reg
+        stream << '\t' << "ADD R3, " << offsetReg << ", R3\n";
+        stream << '\t' << "STORE " << rs << ", (R3)\n";
+        return;
+    }
+
     char sign = '-';
     if(localOffset < 0) {
         localOffset *= -1;

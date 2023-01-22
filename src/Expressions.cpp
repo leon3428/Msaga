@@ -156,11 +156,10 @@ void AssignmentExpression::generateCode(std::ostream &stream) {
             Msaga::storeRegToVar(stream, this, "R0", pExpr -> getIdentifier() -> name);
 		} else {
             PostfixExpression *pExpr2 = static_cast<PostfixExpression*>(pExpr -> getChild(0));
-			pExpr -> getChild(2) -> generateCode(stream); // get index on stack
+            m_children[2] -> generateCode(stream); // value to assign
+            pExpr -> getChild(2) -> generateCode(stream); // get index on stack
             stream << '\t' << "POP R1\n"; //index
             stream << '\t' << "SHL R1, 2, R1\n";
-            
-            m_children[2] -> generateCode(stream); // value to assign
 		    stream << '\t' << "LOAD R0, (SP)\n";
 
             Msaga::storeRegToVar(stream, this, "R0", pExpr2 -> getIdentifier() -> name, "R1");
